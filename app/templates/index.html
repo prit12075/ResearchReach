@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% block title %}ProfMatch AI — Research Mentor Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+  <div class="dashboard-stack">
+    <!-- Background blobs -->
+    <div class="blob-amber"></div>
+    <div class="blob-lavender"></div>
+    <div class="glow-spot"></div>
+
+    <!-- Hero Section -->
+    <section class="hero-card dot-pattern animate-fade-up">
+      <div class="hero-content">
+        <div class="hero-text">
+          <div class="hero-chip">
+            <span class="status-dot animate-pulse" style="background: var(--success);"></span>
+            Match engine ready
+          </div>
+          <h1 class="hero-title">
+            Find Your Perfect Research Mentor, <span style="color: var(--primary);">Instantly.</span>
+          </h1>
+          <p class="hero-lead">
+            AI-matched professors based on your resume & interests. Good evening, <span class="name-accent">{{ profile.get('name', 'Researcher') }}</span>!
+          </p>
+          <div class="hero-actions">
+            <a href="/profile" class="btn-primary" style="background: #1B2B5E;">
+              <i data-lucide="upload" style="width:1.2rem; height:1.2rem;"></i>
+              Upload Resume
+            </a>
+            <a href="/results" class="btn-outline">
+              View Matches
+              <i data-lucide="arrow-right" style="width:1.2rem; height:1.2rem;"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Floating professor avatars -->
+        <div class="floating-avatars animate-fade-up-1">
+          <div class="avatar avatar-lg avatar-pos-1 animate-float">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" class="avatar-image">
+          </div>
+          <div class="avatar avatar-md avatar-pos-2 animate-float-delayed">
+            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face" class="avatar-image">
+          </div>
+          <div class="avatar avatar-sm avatar-pos-3 animate-float-delayed-2">
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" class="avatar-image">
+          </div>
+          <div class="avatar avatar-sm avatar-pos-4 animate-float">
+            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face" class="avatar-image">
+          </div>
+          <div class="avatar-aurora"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Grid -->
+    <section class="stat-grid">
+      <article class="stat-card stat-accent-amber animate-fade-up-1">
+        <div class="stat-card-inner">
+          <div>
+            <p class="stat-label">Professors Matched</p>
+            <p class="stat-value" id="stat-matched">{{ stats.get('total_professors', 0) }}</p>
+          </div>
+          <div class="stat-icon">
+            <i data-lucide="users" style="width:1.2rem; height:1.2rem;"></i>
+          </div>
+        </div>
+      </article>
+      
+      <article class="stat-card stat-accent-navy animate-fade-up-2">
+        <div class="stat-card-inner">
+          <div>
+            <p class="stat-label">Emails Sent</p>
+            <p class="stat-value" id="stat-sent">{{ stats.get('emails_sent', 0) }}</p>
+          </div>
+          <div class="stat-icon">
+            <i data-lucide="mail" style="width:1.2rem; height:1.2rem;"></i>
+          </div>
+        </div>
+      </article>
+
+      <article class="stat-card stat-accent-emerald animate-fade-up-3">
+        <div class="stat-card-inner">
+          <div>
+            <p class="stat-label">Reply Rate</p>
+            <p class="stat-value" id="stat-replies">{{ stats.get('reply_rate', '0%') }}</p>
+          </div>
+          <div class="stat-icon">
+            <i data-lucide="trending-up" style="width:1.2rem; height:1.2rem;"></i>
+          </div>
+        </div>
+      </article>
+
+      <article class="stat-card stat-accent-rose animate-fade-up-4">
+        <div class="stat-card-inner">
+          <div>
+            <p class="stat-label">Interviews Booked</p>
+            <p class="stat-value" id="stat-interviews">{{ stats.get('interviews', 0) }}</p>
+          </div>
+          <div class="stat-icon">
+            <i data-lucide="calendar" style="width:1.2rem; height:1.2rem;"></i>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <div class="content-split">
+      <!-- Recent Activity -->
+      <section class="recent-card animate-fade-up" style="animation-delay: 320ms">
+        <div class="section-head">
+          <div class="flex items-center gap-2">
+            <div class="section-icon" style="width:2.4rem; height:2.4rem; border-radius:0.8rem; background:rgba(27,43,94,0.1); color:var(--primary);">
+              <i data-lucide="activity" style="width:1.1rem; height:1.1rem;"></i>
+            </div>
+            <h2 class="section-title-small" style="margin:0;">Recent Activity</h2>
+          </div>
+          <a href="/outreach" class="filter-pill" style="padding:0.45rem 0.9rem; text-decoration:none; font-size:0.9rem;">View All</a>
+        </div>
+        <div class="activity-list">
+          {% for activity in email_log[:5] %}
+          {% set icon_class = 'activity-icon pending' %}
+          {% set icon_name = 'clock' %}
+          {% if activity.status == 'replied' %}
+            {% set icon_class = 'activity-icon reply' %}
+            {% set icon_name = 'message-square' %}
+          {% elif activity.status == 'sent' %}
+            {% set icon_class = 'activity-icon sent' %}
+            {% set icon_name = 'mail' %}
+          {% endif %}
+          <div class="activity-row">
+            <div class="{{ icon_class }}">
+              <i data-lucide="{{ icon_name }}" style="width:1rem; height:1rem;"></i>
+            </div>
+            <div class="activity-body">
+              <p class="activity-title">{{ activity.professor_name }}</p>
+              <p class="activity-sub">
+                {% if activity.status == 'replied' %}Replied to your email
+                {% elif activity.status == 'sent' %}Email sent
+                {% else %}Status updated: {{ activity.status }}{% endif %}
+              </p>
+            </div>
+            <span class="timestamp-badge">{{ activity.sent_at | format_dt if activity.sent_at else 'Recent' }}</span>
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <p>No recent activity. Start by matching with professors!</p>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- Top Match Today Card -->
+      <section class="top-match-card animate-fade-up" style="animation-delay: 400ms">
+        <div class="match-heading">
+          <div style="display:flex; align-items:center; gap:0.65rem;">
+            <div class="stat-icon" style="width:2.4rem; height:2.4rem; background: rgba(232,146,58,0.15); color: var(--accent); box-shadow: none;">
+              <i data-lucide="sparkles" style="width:1.1rem; height:1.1rem;"></i>
+            </div>
+            <h2 class="section-title-small" style="margin:0;">Top Match Today</h2>
+          </div>
+          <span class="match-chip">Updated live</span>
+        </div>
+        
+        {% if top_match %}
+        <div style="text-align: center;">
+          <div class="match-avatar" style="margin-bottom: 1rem;">
+            <div class="match-initial">
+              {{ top_match.name[0] }}
+            </div>
+            <div class="match-score">
+              {{ top_match.match_score }}%
+            </div>
+          </div>
+          
+          <h3 class="match-name">{{ top_match.name }}</h3>
+          <p class="match-meta">{{ top_match.title or 'Faculty Member' }}</p>
+          <p class="match-university">{{ top_match.university }}</p>
+
+          <div class="interest-tags">
+            {% for interest in top_match.research_areas[:3] %}
+            <span class="interest-pill">{{ interest }}</span>
+            {% endfor %}
+          </div>
+
+          <button class="btn-primary" style="margin-top: 1.5rem; width: 100%;" onclick="location.href='/results'">
+            <i data-lucide="mail" style="width:1rem; height:1rem;"></i>
+            Contact Now
+          </button>
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding: 3rem 0;">
+          <p>Search to see your top matches.</p>
+          <a href="/profile" class="link-quiet" style="margin-top: 0.5rem;">Start Search →</a>
+        </div>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Simple count-up animation for stats
+  function animateValue(id, start, end, duration) {
+    const obj = document.getElementById(id);
+    if (!obj) return;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const value = Math.floor(progress * (end - start) + start);
+      obj.innerHTML = id.includes('replies') ? value + '%' : value;
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }
+
+  window.addEventListener('load', () => {
+    // These values would normally come from the backend context
+    const stats = {{ stats | tojson | safe }};
+    const matched = parseInt(stats.total_professors || 0);
+    const sent = parseInt(stats.emails_sent || 0);
+    const replies = parseInt((stats.reply_rate || "0%").replace('%', ''));
+    
+    animateValue("stat-matched", 0, matched, 1500);
+    animateValue("stat-sent", 0, sent, 1500);
+    animateValue("stat-replies", 0, replies, 1500);
+  });
+</script>
+{% endblock %}

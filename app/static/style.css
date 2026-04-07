@@ -1,0 +1,135 @@
+/* ProfMatch AI — Modern Editorial Design (Warm Ivory) */
+
+/* Layout Overrides */
+main.content-area {
+    padding-top: 2rem;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Noise overlay */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  opacity: 0.05;
+  pointer-events: none;
+  background-image: url('https://grainy-gradients.vercel.app/noise.svg');
+  filter: contrast(120%) brightness(100%);
+}
+
+/* Section titles */
+.section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin-bottom: 1.5rem;
+}
+
+/* Global utility for serif */
+.font-serif {
+    font-family: 'Fraunces', serif !important;
+}
+
+/* Ensure icons are visible */
+[data-lucide] {
+    stroke-width: 2px;
+}
+
+/* Card Overrides */
+.card-lift {
+    background: var(--card);
+}
+
+/* Navigation Active States */
+.nav-item.active i {
+    color: white;
+}
+
+/* Detail Panel Typography */
+.right-panel .font-serif {
+    font-family: 'Fraunces', serif;
+}
+
+/* Match Score Animation */
+@keyframes drawArc {
+  from { stroke-dashoffset: 301; }
+  to { stroke-dashoffset: 0; }
+}
+
+.animate-draw-arc {
+  stroke-dashoffset: 301;
+  stroke-dasharray: 301;
+  animation: drawArc 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Orbit Animation for Search Overlay */
+@keyframes orbit {
+    0% { transform: rotate(0deg) translateX(10px) rotate(0deg); }
+    100% { transform: rotate(360deg) translateX(10px) rotate(-360deg); }
+}
+.animate-orbit {
+    animation: orbit 4s linear infinite;
+}
+
+/* Fade Up Animation */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+    animation: fadeUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Floating Avatars */
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-float-delayed { animation: float 7s ease-in-out infinite 1s; }
+.animate-float-delayed-2 { animation: float 8s ease-in-out infinite 2s; }
+
+/* Dot Pattern Utility */
+.dot-pattern {
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Card & Button Polishing */
+.card-lift {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+}
+.card-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-warm-lg);
+}
+
+.btn-primary {
+    transition: all 0.3s ease;
+}
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+/* Responsive Table */
+.overflow-x-auto {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}

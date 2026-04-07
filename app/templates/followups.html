@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}ProfMatch AI — Follow-ups{% endblock %}
+
+{% block content %}
+{% set items = followups or follow_ups or [] %}
+<div class="dashboard-page">
+  <div class="dashboard-stack">
+    <div class="blob-amber"></div>
+    <div class="blob-lavender"></div>
+
+    <header class="page-heading animate-fade-up">
+      <h1 class="page-title">Follow-ups</h1>
+      <p class="page-subtitle">Track scheduled follow-ups, send now, or reschedule with ease.</p>
+    </header>
+
+    {% if items %}
+    <section class="section-card animate-fade-up" style="padding: 1.5rem;">
+      <div class="section-head" style="margin-bottom: 1rem;">
+        <h2 class="font-serif text-xl font-semibold text-foreground" style="margin:0;">Upcoming & Pending</h2>
+        <span class="status-badge status-pending">{{ items|length }} scheduled</span>
+      </div>
+
+      <div class="timeline-list">
+        {% for fu in items %}
+        {% set status = fu.status or 'pending' %}
+        {% set scheduled = fu.scheduled_for or fu.due_at or fu.created_at %}
+        <div class="timeline-item card-lift">
+          <div class="timeline-dot"></div>
+          <div class="followup-row">
+            <div class="followup-main">
+              <div class="followup-prof">
+                <div class="prof-avatar" style="width:44px; height:44px; font-size:1rem;">
+                  {{ fu.professor_name[:1] if fu.professor_name else '?' }}
+                </div>
+                <div>
+                  <p class="followup-name">{{ fu.professor_name or 'Professor' }}</p>
+                  <p class="followup-univ">{{ fu.professor_email or fu.university }}</p>
+                </div>
+              </div>
+              <div class="followup-meta">
+                <p class="followup-subject">{{ fu.subject or 'Follow-up email' }}</p>
+                <p class="followup-time">Scheduled: {{ scheduled }}</p>
+              </div>
+            </div>
+
+            <div class="followup-actions">
+              <span class="status-badge
+                {% if status == 'sent' %}status-sent{% elif status == 'overdue' %}status-overdue{% else %}status-pending{% endif %}">
+                {{ status|capitalize }}
+              </span>
+              <div class="email-actions">
+                <button class="btn-outline" style="height:2.4rem; padding:0 0.9rem;" onclick="event.stopPropagation(); sendFollowUpNow({{ fu.professor_id or fu.professorID or fu.id }});">
+                  Send Now
+                </button>
+                <button class="btn-primary" style="height:2.4rem; padding:0 0.9rem;" onclick="event.stopPropagation(); rescheduleFollowUp({{ fu.id or fu.follow_up_id or fu.followup_id or 0 }});">
+                  Reschedule
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% else %}
+    <section class="section-card animate-fade-up" style="padding: 2rem; text-align:center;">
+      <div class="w-16 h-16 prof-avatar" style="margin: 0 auto 1rem; background: var(--secondary); color: var(--muted-foreground); font-size:1.25rem;">
+        …
+      </div>
+      <p class="section-title" style="font-size:1.2rem;">No follow-ups scheduled</p>
+      <p class="section-hint" style="margin-top:0.35rem;">Send a few emails and we’ll schedule follow-ups automatically.</p>
+      <button class="btn-primary" style="margin-top:1rem; height:2.6rem; padding:0 1.4rem;" onclick="location.href='/results'">
+        Find Professors
+      </button>
+    </section>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function sendFollowUpNow(professorId) {
+    if (!professorId) return alert("Missing professor id");
+    fetch('/api/send-followup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ professor_id: professorId, send_now: true })
+    }).then(r => r.json()).then(res => {
+      if (res.error) return alert(res.error);
+      alert(res.message || 'Follow-up sent.');
+      location.reload();
+    }).catch(() => alert('Failed to send follow-up'));
+  }
+
+  function rescheduleFollowUp(id) {
+    alert('Reschedule flow coming soon.'); // placeholder to avoid breaking backend
+  }
+
+  lucide.createIcons();
+</script>
+{% endblock %}

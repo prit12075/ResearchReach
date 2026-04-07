@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}ProfMatch AI — Outreach Status{% endblock %}
+
+{% block content %}
+<div class="space-y-8 relative">
+  <!-- Background blobs -->
+  <div class="blob-amber"></div>
+  <div class="blob-lavender"></div>
+
+  <!-- Header -->
+  <div class="relative z-10 animate-fade-up">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+            <h1 class="font-serif text-4xl font-semibold text-foreground">Outreach Status</h1>
+            <p class="text-muted-foreground mt-2 text-lg">Track your conversations and manage your research pipeline.</p>
+        </div>
+        <div class="flex gap-3">
+            <button class="btn-outline h-11 flex items-center gap-2" onclick="openSyncModal()">
+                <i data-lucide="refresh-ccw" style="width:1rem; height:1rem;"></i>
+                Sync Gmail
+            </button>
+            <button class="btn-primary h-11 flex items-center gap-2" onclick="location.reload()">
+                <i data-lucide="rotate-cw" style="width:1rem; height:1rem;"></i>
+                Refresh
+            </button>
+        </div>
+    </div>
+  </div>
+
+  <!-- Mini Stats -->
+  <div class="stat-row animate-fade-up" style="animation-delay: 80ms">
+      <div class="stat-compact">
+          <div class="stat-icon-sm stat-icon-primary">
+              <i data-lucide="send" style="width:1rem; height:1rem;"></i>
+          </div>
+          <div class="stat-copy">
+              <p class="stat-label">Emails Sent</p>
+              <p class="stat-value-sm">{{ stats.emails_sent }}</p>
+          </div>
+      </div>
+      <div class="stat-compact">
+          <div class="stat-icon-sm stat-icon-success">
+              <i data-lucide="message-square" style="width:1rem; height:1rem;"></i>
+          </div>
+          <div class="stat-copy">
+              <p class="stat-label">Replies</p>
+              <p class="stat-value-sm">{{ stats.emails_replied }}</p>
+          </div>
+      </div>
+      <div class="stat-compact">
+          <div class="stat-icon-sm stat-icon-accent">
+              <i data-lucide="clock" style="width:1rem; height:1rem;"></i>
+          </div>
+          <div class="stat-copy">
+              <p class="stat-label">Pending</p>
+              <p class="stat-value-sm">{{ stats.follow_ups_pending }}</p>
+          </div>
+      </div>
+  </div>
+
+  <!-- Activity Log -->
+  <div class="section-card shadow-warm relative z-10 animate-fade-up" style="animation-delay: 160ms; padding: 1.25rem;">
+      <div class="section-head" style="margin-bottom: var(--space-3); align-items:center; gap: var(--space-3);">
+          <div class="flex items-center gap-2">
+            <div class="section-icon" style="width:2.2rem; height:2.2rem; border-radius:0.8rem; background:rgba(27,43,94,0.1); color:var(--primary);">
+              <i data-lucide="list"></i>
+            </div>
+            <h2 class="font-serif text-xl font-semibold text-foreground" style="margin:0;">Activity Log</h2>
+          </div>
+          <div class="flex items-center gap-2" style="flex-wrap:wrap;">
+            <div class="filter-tabs" style="gap: var(--space-2);">
+              <button class="filter-pill active">All</button>
+              <button class="filter-pill">Sent</button>
+              <button class="filter-pill">Replied</button>
+              <button class="filter-pill">Pending</button>
+            </div>
+            <div class="relative" style="width: 260px;">
+              <i data-lucide="search" class="absolute" style="left:0.7rem; top:50%; transform:translateY(-50%); width:1rem; height:1rem; color:var(--muted-foreground);"></i>
+              <input type="text" placeholder="Search logs..." class="input-control" style="padding-left:2.1rem; height: 2.5rem;">
+            </div>
+          </div>
+      </div>
+
+      <div class="email-list">
+        {% for log in email_log %}
+        {% set status_class = 'status-pending' %}
+        {% if log.status == 'replied' %}
+          {% set status_class = 'status-sent' %}
+        {% elif log.status == 'sent' %}
+          {% set status_class = 'status-scheduled' %}
+        {% endif %}
+        <div class="feed-card card-lift" style="animation-delay: {{ loop.index0 * 30 }}ms;">
+          <div class="feed-top">
+            <div class="prof-avatar" style="width:44px; height:44px; font-size:1rem;">
+              {{ log.professor_name[:1] if log.professor_name else '?' }}
+            </div>
+            <div class="feed-body">
+              <div class="feed-line">
+                <span class="feed-name">{{ log.professor_name }}</span>
+                <span class="feed-email">{{ log.professor_email }}</span>
+              </div>
+              <p class="feed-subject">{{ log.subject }}</p>
+              <p class="feed-preview">{{ (log.body or '')[:140] }}{% if log.body and log.body|length > 140 %}…{% endif %}</p>
+            </div>
+            <div class="feed-meta">
+              <span class="status-badge {{ status_class }}">{{ log.status | capitalize }}</span>
+              <span class="feed-date">{{ log.sent_at[:10] if log.sent_at else log.created_at[:10] }}</span>
+            </div>
+          </div>
+          <div class="feed-actions">
+            <button class="btn-outline" style="height:2.4rem; padding:0 0.9rem;" onclick="event.stopPropagation(); viewEmailDetail({{ log.id }});">
+              View
+            </button>
+            {% if log.status != 'replied' %}
+            <button class="btn-primary" style="height:2.4rem; padding:0 0.9rem;" onclick="event.stopPropagation(); markReplied({{ log.id }});">
+              Mark Replied
+            </button>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+  </div>
+</div>
+
+<!-- Gmail Sync Modal (Integrated) -->
+<div id="sync-modal-new" class="fixed inset-0 bg-white/80 backdrop-blur-md z-[300] flex items-center justify-center p-6 hidden">
+    <div class="bg-card w-full max-w-md rounded-3xl shadow-warm-lg border border-border p-8 animate-fade-up">
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white">
+                    <i data-lucide="mail-search" style="width:1.5rem; height:1.5rem;"></i>
+                </div>
+                <div>
+                    <h2 class="font-serif text-xl font-bold">Gmail Sync</h2>
+                    <p class="text-xs text-muted-foreground">Import historical outreach data</p>
+                </div>
+            </div>
+            <button onclick="closeSyncModal()" class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-secondary/50 rounded-2xl p-4 text-sm text-foreground leading-relaxed">
+                ProfMatch AI will scan your <strong>Sent</strong> folder for past research inquiries and update your matching history automatically.
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sync Duration</label>
+                <select id="sync-days-new" class="w-full bg-secondary border-none rounded-xl p-3 text-sm focus:ring-1 ring-primary">
+                    <option value="30">Past 30 Days</option>
+                    <option value="90">Past 3 Months</option>
+                    <option value="180" selected>Past 6 Months</option>
+                    <option value="365">Past Year</option>
+                </select>
+            </div>
+
+            <button class="w-full btn-primary h-12 shimmer-btn flex items-center justify-center gap-2" onclick="startSync()">
+                <i data-lucide="refresh-cw" style="width:1.2rem; height:1.2rem;"></i>
+                Start Gmail Sync
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function openSyncModal() {
+        document.getElementById('sync-modal-new').classList.remove('hidden');
+    }
+
+    function closeSyncModal() {
+        document.getElementById('sync-modal-new').classList.add('hidden');
+    }
+
+    function startSync() {
+        const days = document.getElementById('sync-days-new').value;
+        alert("Starting sync for the last " + days + " days. This will take a few minutes...");
+        closeSyncModal();
+        // Trigger /api/sync-gmail in background
+        fetch('/api/sync-gmail', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ days_back: days })
+        });
+    }
+
+    function viewEmailDetail(id) {
+        // Find existing log entry
+        const logs = {{ email_log | tojson | safe }};
+        const log = logs.find(l => l.id === id);
+        if (!log) return;
+
+        const content = `
+            <div class="p-8 space-y-6">
+                <div class="flex items-center justify-between">
+                    <button onclick="closePanel()" class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center transition-colors">
+                        <i data-lucide="x"></i>
+                    </button>
+                    <span class="text-xs font-mono text-muted-foreground">Log #${id}</span>
+                </div>
+
+                <div>
+                    <h2 class="font-serif text-2xl font-semibold text-foreground">Email Preview</h2>
+                    <p class="text-sm text-muted-foreground mt-1">To: ${log.professor_name} (${log.professor_email})</p>
+                </div>
+
+                <div class="bg-secondary/30 rounded-2xl p-5 space-y-4">
+                    <div>
+                        <p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Subject</p>
+                        <p class="text-sm font-semibold">${log.subject}</p>
+                    </div>
+                    <div class="border-t border-border/50 pt-4">
+                        <p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Body</p>
+                        <div class="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-mono bg-white p-4 rounded-xl border border-border/50">
+                            ${log.body}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex gap-3">
+                    <button class="flex-1 btn-outline h-11 flex items-center justify-center gap-2" onclick="closePanel()">
+                        Close Preview
+                    </button>
+                    <button class="flex-1 btn-primary h-11 flex items-center justify-center gap-2" onclick="location.href='/results'">
+                        View Professor
+                    </button>
+                </div>
+            </div>
+        `;
+        openPanel(content);
+    }
+
+    function markReplied(id) {
+        fetch('/api/mark-replied', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email_id: id })
+        }).then(() => location.reload());
+    }
+
+    lucide.createIcons();
+</script>
+{% endblock %}

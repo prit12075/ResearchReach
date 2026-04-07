@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% block title %}ProfMatch AI — Resume & Profile{% endblock %}
+
+{% block content %}
+<div class="resume-page">
+  <div class="resume-stack">
+    <div class="blob-amber"></div>
+    <div class="blob-lavender"></div>
+
+    <header class="page-heading animate-fade-up">
+      <h1 class="page-title">Resume & Profile</h1>
+      <p class="page-subtitle">Upload your resume and refine your academic profile for AI-powered matching.</p>
+    </header>
+
+    <section class="section-grid animate-fade-up">
+      <article class="section-card">
+        <div class="section-header">
+          <div class="section-icon">
+            <i data-lucide="upload" style="width:1.2rem; height:1.2rem;"></i>
+          </div>
+          <div>
+            <p class="section-title">Upload Resume</p>
+            <p class="section-hint">PDF, DOC, or DOCX</p>
+          </div>
+        </div>
+
+        <div id="drop-zone" class="upload-drop">
+          <div id="upload-idle">
+              <div class="upload-illustration">
+                  <i data-lucide="file-text" id="idle-icon"></i>
+              </div>
+              <p class="upload-title">Resume uploaded successfully</p>
+              <p class="upload-sub">Aryan_Patel_Resume.pdf</p>
+              <div class="upload-actions">
+                <button class="btn-outline" style="height: 2.6rem; font-size: 0.8rem;" onclick="document.getElementById('resume-upload').click()">
+                    <i data-lucide="upload" style="width:12px; height:12px;"></i>
+                    Upload New Resume
+                </button>
+              </div>
+          </div>
+
+          <div id="upload-processing" class="hidden">
+              <div class="upload-illustration" style="background: rgba(232,146,58,0.1); color: var(--accent);">
+                  <i data-lucide="sparkles" style="width:2rem; height:2rem;"></i>
+              </div>
+              <p class="upload-title">Processing your resume...</p>
+          </div>
+          
+          <input type="file" id="resume-upload" accept=".pdf,.doc,.docx" style="display:none" onchange="handleFileSelect(this)" />
+        </div>
+      </article>
+
+      <aside class="section-card" style="animation-delay: 120ms;">
+        <div class="section-header">
+          <div class="section-icon accent">
+            <i data-lucide="sparkles" style="width:1.1rem; height:1.1rem;"></i>
+          </div>
+          <div>
+            <p class="section-title">Parsed Data</p>
+            <p class="section-hint">What we’ll use for matching</p>
+          </div>
+        </div>
+        
+        <div class="resume-stack" style="gap:1rem;">
+          <div>
+            <p class="section-hint" style="font-weight:700; margin-bottom:0.35rem;">Research Interests</p>
+            <div class="tag-cloud" id="tags-research">
+              {% for interest in profile.get('research_interests', ['Computer Vision', 'Robotics', 'NLP']) %}
+              <span class="tag-pill">{{ interest }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          <div>
+            <p class="section-hint" style="font-weight:700; margin-bottom:0.35rem;">Skills</p>
+            <div class="tag-cloud" id="tags-skills">
+              {% for skill in profile.get('skills', ['Machine Learning', 'Deep Learning', 'Python', 'TensorFlow', 'PyTorch', 'Computer Vision', 'NLP', 'Data Analysis', 'Research', 'Academic Writing']) %}
+              <span class="tag-pill">{{ skill }}</span>
+              {% endfor %}
+              <button class="tag-pill muted" type="button">+ Add Skill</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section-card animate-fade-up" style="animation-delay: 200ms;">
+      <div class="section-header">
+        <div class="section-icon" style="background: rgba(27,43,94,0.12); color: var(--primary);">
+          <i data-lucide="briefcase" style="width:1.2rem; height:1.2rem;"></i>
+        </div>
+        <div>
+          <p class="section-title">Experience</p>
+          <p class="section-hint">Extracted from your resume</p>
+        </div>
+      </div>
+
+      <div class="resume-stack" style="gap: 1rem;">
+          <div class="experience-card">
+              <div class="experience-meta">
+                  <div>
+                      <p class="experience-title">Research Assistant</p>
+                      <p class="experience-org">UC San Diego – ML Lab</p>
+                  </div>
+                  <span class="experience-date">2024 — Present</span>
+              </div>
+              <p class="experience-body">Developed novel contrastive learning methods for medical image analysis.</p>
+          </div>
+
+          <div class="experience-card" style="border-left-color: #1B2B5E;">
+              <div class="experience-meta">
+                  <div>
+                      <p class="experience-title">Software Engineering Intern</p>
+                      <p class="experience-org" style="color: #1B2B5E;">Google Research</p>
+                  </div>
+                  <span class="experience-date">Summer 2024</span>
+              </div>
+              <p class="experience-body">Worked on large-scale vision models for autonomous systems.</p>
+          </div>
+      </div>
+    </section>
+
+    <section class="section-card animate-fade-up" style="animation-delay: 240ms;">
+      <div class="section-header" style="justify-content: space-between; align-items:center;">
+        <div class="section-header" style="margin-bottom:0;">
+            <div class="section-icon">
+                <i data-lucide="user" style="width:1.2rem; height:1.2rem;"></i>
+            </div>
+            <div>
+                <p class="section-title">Profile Details</p>
+                <p class="section-hint">Information used for personalized email outreach</p>
+            </div>
+        </div>
+        <button class="btn-primary" style="height: 2.75rem; padding: 0 var(--space-5);" onclick="launchSearch()" id="search-btn">
+            Launch Search
+        </button>
+      </div>
+
+        <form id="profile-form" class="settings-stack" style="gap: var(--space-3);">
+            <div class="two-col">
+              <div class="field">
+                  <label>Full Name</label>
+                  <input type="text" name="name" class="input-control" value="{{ profile.get('name', '') }}" placeholder="e.g. Prit Patel">
+              </div>
+              <div class="field">
+                  <label>Email Address</label>
+                  <input type="email" name="email" class="input-control" value="{{ profile.get('email', '') }}" placeholder="you@university.edu">
+              </div>
+            </div>
+            <div class="three-col">
+              <div class="field">
+                  <label>University</label>
+                  <input type="text" name="university" class="input-control" value="{{ profile.get('university', '') }}" placeholder="PDEU">
+              </div>
+              <div class="field">
+                  <label>Degree</label>
+                  <input type="text" name="degree" class="input-control" value="{{ profile.get('degree', '') }}" placeholder="B.Tech">
+              </div>
+              <div class="field">
+                  <label>Year</label>
+                  <input type="text" name="year" class="input-control" value="{{ profile.get('year', '') }}" placeholder="3rd Year">
+              </div>
+            </div>
+            <div class="field">
+                <label>Research Bio / Statement</label>
+                <textarea name="bio" rows="3" class="input-control text-area lined-paper" placeholder="I am passionate about machine learning and its applications in...">{{ profile.get('bio', '') }}</textarea>
+            </div>
+            <div class="field">
+                <label>Active Projects</label>
+                <textarea name="projects" rows="3" class="input-control text-area font-mono" placeholder="One project per line...">{{ profile.get('projects', [])|join('\n') }}</textarea>
+            </div>
+        </form>
+    </section>
+  </div>
+</div>
+
+  <!-- Search Overlay (Simulated Progress) -->
+  <div id="search-overlay" class="search-overlay">
+      <div class="search-shell">
+          <div class="search-illustration">
+              <i data-lucide="search" style="width:2.5rem; height:2.5rem; color: var(--primary);"></i>
+          </div>
+          <h2 class="search-title">Searching the Globe...</h2>
+          <p class="search-text" id="progress-text">Scanning Semantic Scholar and university portals</p>
+          
+          <div class="progress-track">
+              <div id="search-bar" class="progress-bar"></div>
+          </div>
+          <div class="progress-meta">
+              <span id="progress-pct">10% Complete</span>
+              <span id="progress-source">Semantic Scholar</span>
+          </div>
+      </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function handleFileSelect(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    document.getElementById('upload-idle').classList.add('hidden');
+    document.getElementById('upload-processing').classList.remove('hidden');
+    
+    // Simulate parse-resume call
+    const formData = new FormData();
+    formData.append('resume', file);
+    
+    fetch('/api/upload-resume', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) throw new Error(data.error);
+        
+        // Show success state
+        document.getElementById('upload-processing').classList.add('hidden');
+        document.getElementById('upload-success').classList.remove('hidden');
+        document.getElementById('uploaded-filename').innerText = file.name;
+        
+        // Update form fields with extracted data
+        const form = document.getElementById('profile-form');
+        if (data.name) form.name.value = data.name;
+        if (data.email) form.email.value = data.email;
+        if (data.bio) form.bio.value = data.bio;
+        
+        // Render tags
+        if (data.research_interests) {
+            const container = document.getElementById('tags-research');
+            container.innerHTML = data.research_interests.map(t => `<span class="tag-pill">${t}</span>`).join('');
+        }
+        
+    })
+    .catch(err => {
+        alert("Error parsing resume: " + err.message);
+        resetUpload();
+    });
+  }
+
+  function resetUpload() {
+    document.getElementById('upload-success').classList.add('hidden');
+    document.getElementById('upload-processing').classList.add('hidden');
+    document.getElementById('upload-idle').classList.remove('hidden');
+    document.getElementById('resume-upload').value = '';
+  }
+
+  function launchSearch() {
+    const overlay = document.getElementById('search-overlay');
+    overlay.classList.add('active');
+    
+    // Submit form data to /api/search
+    const formData = new FormData(document.getElementById('profile-form'));
+    const data = Object.fromEntries(formData.entries());
+    
+    // Convert comma separated lists to arrays if any
+    data.research_interests = document.getElementById('tags-research').innerText.split('\n').filter(t => t.trim());
+    data.skills = document.getElementById('tags-skills').innerText.split('\n').filter(t => t.trim());
+    data.projects = data.projects.split('\n').filter(p => p.trim());
+
+    fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(() => pollStatus());
+  }
+
+  function pollStatus() {
+    fetch('/api/search/status')
+    .then(r => r.json())
+    .then(status => {
+        document.getElementById('search-bar').style.width = status.progress + '%';
+        document.getElementById('progress-pct').innerText = status.progress + '% Complete';
+        document.getElementById('progress-text').innerText = status.message;
+        
+        if (status.status === 'done') {
+            window.location.href = '/results';
+        } else if (status.status === 'error') {
+            alert("Search failed: " + status.error);
+            document.getElementById('search-overlay').classList.remove('active');
+        } else {
+            setTimeout(pollStatus, 1000);
+        }
+    });
+  }
+
+  lucide.createIcons();
+</script>
+{% endblock %}

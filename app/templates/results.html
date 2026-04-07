@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}ProfMatch AI — Professor Matches{% endblock %}
+
+{% block content %}
+<div class="space-y-8 relative">
+  <!-- Background blobs -->
+  <div class="blob-amber"></div>
+  <div class="blob-lavender"></div>
+
+  <!-- Header -->
+  <div class="relative z-10 animate-fade-up">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div>
+            <h1 class="page-title" style="margin-bottom: var(--space-1);">Professor Matches</h1>
+            <p class="page-subtitle" style="margin:0;">Found <span class="text-primary font-bold">{{ professors | length }}</span> researchers aligned with your profile.</p>
+        </div>
+        <div class="flex flex-wrap md:flex-nowrap items-center gap-3">
+            <button class="btn-outline" style="height: 2.6rem;" onclick="location.href='/profile'">
+                <i data-lucide="refresh-cw" style="width:1rem; height:1rem;"></i>
+                Refine Search
+            </button>
+            <button class="btn-primary" style="height: 2.6rem;" onclick="exportResults()">
+                <i data-lucide="download" style="width:1rem; height:1rem;"></i>
+                Export Results
+            </button>
+        </div>
+    </div>
+  </div>
+
+  <!-- Filter Pills -->
+  <div class="filter-tabs relative z-10 animate-fade-up" style="animation-delay: 80ms; margin-top: var(--space-3); gap: var(--space-3); flex-wrap: wrap;">
+      <button class="filter-pill active" style="padding: 0.6rem 1.15rem;">All Matches</button>
+      <button class="filter-pill" style="padding: 0.6rem 1.15rem;">Excellent (>80%)</button>
+      <button class="filter-pill" style="padding: 0.6rem 1.15rem;">New Matches</button>
+      <button class="filter-pill" style="padding: 0.6rem 1.15rem;">Contacted</button>
+  </div>
+
+  <!-- Results Grid -->
+  <div class="results-grid relative z-10" style="margin-top: var(--space-4);">
+    {% for prof in professors %}
+    <div class="match-card animate-fade-up cursor-pointer" 
+         style="animation-delay: {{ loop.index0 * 50 }}ms"
+         onclick="showProfessorDetail({{ prof.id }})">
+      
+      <div class="match-header">
+        <div class="match-avatar">
+          <svg class="match-ring" viewBox="0 0 88 88">
+            <circle cx="44" cy="44" r="40" fill="none" stroke="var(--secondary)" stroke-width="3"></circle>
+            <circle cx="44" cy="44" r="40" fill="none" stroke="var(--accent)" stroke-width="3.5"
+              stroke-dasharray="{{ ((prof.match_score or 0) / 100) * 251 | round(2) }} 251"
+              stroke-linecap="round" transform="rotate(-90 44 44)"></circle>
+          </svg>
+          <div class="prof-avatar" style="width:60px; height:60px; font-size:1.1rem;">
+            {% if prof.image_url %}
+              <img src="{{ prof.image_url }}" alt="{{ prof.name }} headshot" class="prof-avatar-img">
+            {% else %}
+              <span class="prof-avatar-initial">{{ prof.name[:1] if prof.name else '?' }}</span>
+            {% endif %}
+          </div>
+        </div>
+        <div style="flex:1;">
+          <p class="match-name">{{ prof.name }}</p>
+          <p class="match-meta">{{ prof.title or 'Faculty Member' }} · {{ prof.university }}</p>
+        </div>
+        <span class="match-score-badge">{{ prof.match_score | int }}%</span>
+      </div>
+
+      <div class="match-tags">
+        {% for area in prof.research_areas[:3] %}
+        <span class="tag-pill" style="font-size:0.78rem; padding: 0.35rem 0.75rem;">{{ area }}</span>
+        {% endfor %}
+      </div>
+
+      <div class="match-footer">
+        <div style="display:flex; align-items:center; gap:0.35rem;">
+            <i data-lucide="book-open" style="width:0.95rem; height:0.95rem;"></i>
+            <span>{{ prof.publication_count or 0 }} Pubs</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.3rem; color: var(--primary);">
+            <span>Details</span>
+            <i data-lucide="chevron-right" style="width:0.9rem; height:0.9rem;"></i>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if not professors %}
+  <div class="text-center py-20 animate-fade-up">
+    <div class="w-20 h-20 rounded-3xl bg-secondary flex items-center justify-center mx-auto mb-6 text-muted-foreground">
+        <i data-lucide="search-x" style="width:2.5rem; height:2.5rem;"></i>
+    </div>
+    <h2 class="font-serif text-2xl font-semibold text-foreground">No matches found</h2>
+    <p class="text-muted-foreground mt-2 max-w-sm mx-auto">Try refining your research interests or uploading a more detailed resume.</p>
+    <a href="/profile" class="btn-primary mt-8 inline-flex items-center gap-2 no-underline">
+        <i data-lucide="edit" style="width:1rem; height:1rem;"></i>
+        Adjust Profile
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const ALL_PROFESSORS = {{ professors | tojson | safe }};
+  
+  function showProfessorDetail(id) {
+    const prof = ALL_PROFESSORS.find(p => p.id === id);
+    if (!prof) return;
+    const initials = (prof.name || '')
+      .split(' ')
+      .filter(Boolean)
+      .map(part => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || '?';
+    
+    const content = `
+      <div class="p-8 space-y-8">
+        <div class="flex items-center justify-between">
+            <button onclick="closePanel()" class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center transition-colors">
+                <i data-lucide="x"></i>
+            </button>
+            <div class="flex gap-2">
+                <button class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center transition-colors">
+                    <i data-lucide="share-2"></i>
+                </button>
+                <button class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center transition-colors">
+                    <i data-lucide="star"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <div class="prof-avatar prof-avatar-lg" style="background: var(--primary); color: #fff; margin: 0 auto 1rem;">
+                ${initials}
+            </div>
+            <h2 class="font-serif text-2xl font-semibold text-foreground">${prof.name}</h2>
+            <p class="text-accent font-medium mt-1">${prof.title || 'Faculty Member'}</p>
+            <div class="flex items-center justify-center gap-1.5 text-muted-foreground mt-1 text-sm">
+                <i data-lucide="map-pin" style="width:0.9rem; height:0.9rem;"></i>
+                <span>${prof.university}</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-secondary/50 rounded-2xl p-4 text-center">
+                <p class="text-xs text-muted-foreground font-medium uppercase tracking-wider">Match Score</p>
+                <p class="text-2xl font-serif font-bold text-accent">${prof.match_score}%</p>
+            </div>
+            <div class="bg-secondary/50 rounded-2xl p-4 text-center">
+                <p class="text-xs text-muted-foreground font-medium uppercase tracking-wider">Publications</p>
+                <p class="text-2xl font-serif font-bold text-primary">${prof.publication_count || 0}</p>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <h4 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <i data-lucide="tag" class="text-accent" style="width:1rem; height:1rem;"></i>
+                    Research Pillars
+                </h4>
+                <div class="flex flex-wrap gap-2">
+                    ${(prof.research_areas || []).map(a => `<span class="px-3 py-1.5 rounded-full bg-secondary text-xs font-medium">${a}</span>`).join('')}
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <i data-lucide="book" class="text-primary" style="width:1rem; height:1rem;"></i>
+                    Recent Publication
+                </h4>
+                <div class="bg-card border border-border rounded-2xl p-4 shadow-sm">
+                    <p class="text-sm text-foreground italic leading-relaxed">
+                        "${prof.recent_papers || 'No recent papers found in database.'}"
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-8 space-y-3">
+            <button class="w-full btn-primary h-12 flex items-center justify-center gap-2 group" onclick="startOutreach(${prof.id})">
+                <i data-lucide="sparkles" style="width:1.2rem; height:1.2rem;"></i>
+                Generate AI Outreach
+                <i data-lucide="arrow-right" class="group-hover:translate-x-1 transition-transform" style="width:1.2rem; height:1.2rem;"></i>
+            </button>
+            <button class="w-full btn-outline h-12 flex items-center justify-center gap-2" onclick="window.open('${prof.scholar_url || '#'}', '_blank')">
+                <i data-lucide="external-link" style="width:1rem; height:1rem;"></i>
+                View Academic Profile
+            </button>
+        </div>
+      </div>
+    `;
+    
+    openPanel(content);
+  }
+
+  function startOutreach(id) {
+    // This will eventually open the Email Studio modal or move to outreach screen
+    // For now, let's just log it
+    console.log("Starting outreach for professor", id);
+    // You can implement the existing Email Studio logic here or redirect
+    alert("Email Studio under construction in new UI. Coming soon!");
+  }
+
+  function exportResults() {
+    alert("Exporting " + ALL_PROFESSORS.length + " results to CSV...");
+  }
+</script>
+{% endblock %}

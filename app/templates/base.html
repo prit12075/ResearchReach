@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}ProfMatch AI{% endblock %}</title>
+  <meta name="description" content="{% block description %}AI-powered professor research matcher and personalized email automation system{% endblock %}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='design_system.css') }}?v=1.1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='animations.css') }}?v=1.1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=1.1" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  {% block head %}{% endblock %}
+  <style>
+    /* Layout specific styles for the new sidebar */
+    :root {
+      --sidebar-width: 260px;
+    }
+    
+    body {
+        overflow-x: hidden;
+    }
+
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+      background-color: var(--background);
+    }
+
+    .new-sidebar {
+      width: var(--sidebar-width);
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 40;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .sidebar-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .sidebar-logo-container {
+      width: 2.75rem;
+      height: 2.75rem;
+      background: var(--primary);
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-foreground);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .sidebar-logo-wrapper {
+        position: relative;
+    }
+
+    .sidebar-logo-sparkle {
+        position: absolute;
+        top: -0.25rem;
+        right: -0.25rem;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        background: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent-foreground);
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 1rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 0.75rem;
+      border-radius: 0.75rem;
+      color: var(--muted-foreground);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .nav-item i {
+        width: 1.25rem;
+        height: 1.25rem;
+        color: var(--muted-foreground);
+    }
+
+    .nav-item:hover {
+      background: var(--secondary);
+      color: var(--foreground);
+    }
+
+    .nav-item.active {
+      background: var(--accent);
+      color: var(--accent-foreground);
+    }
+
+    .nav-item.active i {
+        color: var(--accent-foreground);
+    }
+
+    /* Upgrade Card */
+    .upgrade-container {
+        padding: 0 0.75rem 0.75rem 0.75rem;
+    }
+
+    .pro-card {
+      padding: 1rem;
+      background: var(--secondary);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+    }
+
+    .pro-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .pro-card-icon {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.5rem;
+        background: rgba(232, 146, 58, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent);
+    }
+
+    .sidebar-profile-container {
+        padding: 1rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .sidebar-profile {
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .sidebar-profile:hover {
+        background-color: var(--secondary);
+    }
+
+    .profile-avatar-wrapper {
+        position: relative;
+    }
+
+    .profile-avatar {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: var(--primary-foreground);
+      box-shadow: 0 0 0 2px rgba(232, 146, 58, 0.3); /* ring-2 ring-accent/30 */
+    }
+
+    .profile-avatar-dot {
+        position: absolute;
+        bottom: -0.125rem;
+        right: -0.125rem;
+        width: 0.875rem;
+        height: 0.875rem;
+        border-radius: 50%;
+        background: var(--success);
+        border: 2px solid var(--card);
+    }
+
+    /* Text truncate utilities missing from custom styles */
+    .truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .main-wrapper {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .content-area {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Right Detail Panel */
+    .right-panel {
+      width: 420px;
+      height: 100vh;
+      position: fixed;
+      right: 0;
+      top: 0;
+      background: var(--sidebar);
+      border-left: 1px solid var(--sidebar-border);
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .right-panel.open {
+      transform: translateX(0);
+    }
+
+    .panel-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(2px);
+      z-index: 95;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .panel-overlay.active {
+      display: block;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Sidebar -->
+  <aside class="new-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-wrapper">
+        <div class="sidebar-logo-container">
+          <i data-lucide="graduation-cap" style="width:1.5rem; height:1.5rem;"></i>
+        </div>
+        <div class="sidebar-logo-sparkle">
+            <i data-lucide="sparkles" style="width:0.625rem; height:0.625rem;"></i>
+        </div>
+      </div>
+      <div>
+        <h1 class="font-serif text-xl font-semibold text-foreground tracking-tight" style="margin:0; line-height:1; letter-spacing: -0.025em;">ProfFinder</h1>
+        <p class="text-xs text-muted-foreground" style="margin:0; margin-top:2px;">AI Research Matching</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">
+        <i data-lucide="layout-dashboard"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="/profile" class="nav-item {% if request.path == '/profile' %}active{% endif %}">
+        <i data-lucide="file-text"></i>
+        <span>Resume</span>
+      </a>
+      <a href="/results" class="nav-item {% if request.path == '/results' %}active{% endif %}">
+        <i data-lucide="graduation-cap"></i>
+        <span>Professors</span>
+      </a>
+      <a href="/outreach" class="nav-item {% if request.path == '/outreach' %}active{% endif %}">
+        <i data-lucide="mail"></i>
+        <span>Outreach</span>
+      </a>
+      <a href="/follow-ups" class="nav-item {% if request.path == '/follow-ups' %}active{% endif %}">
+        <i data-lucide="clock"></i>
+        <span>Follow-ups</span>
+      </a>
+      <a href="/settings" class="nav-item {% if request.path == '/settings' %}active{% endif %}">
+        <i data-lucide="settings"></i>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+    <div class="upgrade-container">
+      <div class="pro-card">
+        <div class="pro-card-header">
+          <div class="pro-card-icon">
+            <i data-lucide="zap" style="width:1rem; height:1rem;"></i>
+          </div>
+          <span class="text-sm font-semibold text-foreground">Upgrade to Pro</span>
+        </div>
+        <p class="text-xs text-muted-foreground mb-3" style="margin-top:0;">Unlock unlimited matches and AI emails</p>
+        <button class="w-full btn-primary h-10 text-sm py-2.5 rounded-xl font-semibold" style="padding: 0.625rem;">Upgrade Now</button>
+      </div>
+    </div>
+
+    <div class="sidebar-profile-container">
+      <div class="sidebar-profile">
+        <div class="profile-avatar-wrapper">
+          <div class="profile-avatar">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" class="w-full h-full rounded-full object-cover">
+          </div>
+          <div class="profile-avatar-dot"></div>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <p class="text-sm font-semibold text-foreground truncate" style="margin:0;">Aryan Patel</p>
+          <div class="flex items-center gap-1.5" style="margin-top: 2px;">
+            <span class="bg-accent text-accent-foreground text-[10px] font-mono font-medium px-1.5 py-0.5 rounded inline-flex items-center" style="color: white; line-height: 1;">PRO</span>
+            <span class="text-xs text-muted-foreground">Premium</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="main-wrapper" id="main-wrapper">
+    <main class="content-area">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Right Detail Panel -->
+  <div id="right-panel" class="right-panel shadow-warm-lg">
+    <!-- Content injected via JS -->
+  </div>
+  
+  <div id="panel-overlay" class="panel-overlay"></div>
+</div>
+
+<!-- Lucide Init -->
+<script>
+  lucide.createIcons();
+  
+  function openPanel(content) {
+    const panel = document.getElementById('right-panel');
+    const overlay = document.getElementById('panel-overlay');
+    panel.innerHTML = content;
+    panel.classList.add('open');
+    overlay.classList.add('active');
+    lucide.createIcons();
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePanel() {
+    document.getElementById('right-panel').classList.remove('open');
+    document.getElementById('panel-overlay').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('panel-overlay').onclick = closePanel;
+</script>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

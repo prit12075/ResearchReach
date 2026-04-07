@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Contact Support{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+  <div class="dashboard-stack">
+    <div class="blob-amber"></div>
+    <div class="blob-lavender"></div>
+
+    <header class="page-heading animate-fade-up">
+      <h1 class="page-title">Contact Support</h1>
+      <p class="page-subtitle">Have a question or facing an issue? We're here to help.</p>
+    </header>
+
+    <section class="contact-grid animate-fade-up" style="animation-delay: 60ms;">
+      <!-- Contact Form -->
+      <article class="section-card">
+        <div class="section-header" style="margin-bottom: var(--space-3);">
+          <div class="section-icon" style="width:2.4rem; height:2.4rem; border-radius:0.8rem; background:rgba(27,43,94,0.1); color:var(--primary);">
+            <i data-lucide="headset" style="width:1.1rem; height:1.1rem;"></i>
+          </div>
+          <div>
+            <p class="section-title">Send us a message</p>
+            <p class="section-hint">We usually reply within 24 hours.</p>
+          </div>
+        </div>
+        <form id="contact-form" class="settings-stack" onsubmit="handleContact(event)">
+          <div class="two-col">
+            <div class="field">
+              <label>Name</label>
+              <input type="text" name="name" class="input-control" required placeholder="Your name">
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input type="email" name="email" class="input-control" required placeholder="you@company.com">
+            </div>
+          </div>
+          <div class="two-col">
+            <div class="field">
+              <label>Subject</label>
+              <input type="text" name="subject" class="input-control" required placeholder="Short summary">
+            </div>
+            <div class="field">
+              <label>Category</label>
+              <select name="category" class="input-control" required>
+                <option value="General" selected>General</option>
+                <option value="Bug">Bug</option>
+                <option value="Feature Request">Feature Request</option>
+                <option value="Billing">Billing</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Message</label>
+            <textarea name="message" rows="4" class="input-control text-area" required placeholder="Tell us more about your question or issue..."></textarea>
+          </div>
+          <div class="profile-actions" style="justify-content:flex-start;">
+            <button id="contact-submit" class="btn-primary" style="height:2.8rem; min-width:150px;">Send Message</button>
+            <span id="contact-status" class="text-sm text-muted-foreground" style="display:none;">Sending...</span>
+          </div>
+          <div id="contact-success" class="status-badge status-sent" style="display:none; margin-top: var(--space-2);">Message sent successfully!</div>
+        </form>
+      </article>
+
+      <!-- Support Info -->
+      <article class="section-card">
+        <div class="section-header" style="margin-bottom: var(--space-3);">
+          <div class="section-icon accent" style="width:2.4rem; height:2.4rem; border-radius:0.8rem;">
+            <i data-lucide="info" style="width:1.1rem; height:1.1rem;"></i>
+          </div>
+          <div>
+            <p class="section-title">Quick help</p>
+            <p class="section-hint">Fast paths to get you answers.</p>
+          </div>
+        </div>
+
+        <div class="support-cards">
+          <div class="support-item">
+            <div class="support-icon" style="background:rgba(27,43,94,0.08); color:var(--primary);">
+              <i data-lucide="mail"></i>
+            </div>
+            <div>
+              <p class="support-title">Email</p>
+              <p class="support-sub">support@yourapp.com</p>
+            </div>
+          </div>
+          <div class="support-item">
+            <div class="support-icon" style="background:rgba(61,158,115,0.12); color:var(--success);">
+              <i data-lucide="clock-3"></i>
+            </div>
+            <div>
+              <p class="support-title">Response time</p>
+              <p class="support-sub">Usually within 24 hours</p>
+            </div>
+          </div>
+          <div class="support-item">
+            <div class="support-icon" style="background:rgba(232,146,58,0.14); color:var(--accent);">
+              <i data-lucide="book-open"></i>
+            </div>
+            <div>
+              <p class="support-title">Help center</p>
+              <p class="support-sub">Check FAQ or docs before contacting</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="support-grid">
+          <div class="support-mini">
+            <div class="support-icon mini" style="background:rgba(232,146,58,0.14); color:var(--accent);">
+              <i data-lucide="bug"></i>
+            </div>
+            <div>
+              <p class="support-title">Report a bug</p>
+              <p class="support-sub">Share steps and screenshots</p>
+            </div>
+          </div>
+          <div class="support-mini">
+            <div class="support-icon mini" style="background:rgba(27,43,94,0.12); color:var(--primary);">
+              <i data-lucide="lightbulb"></i>
+            </div>
+            <div>
+              <p class="support-title">Request a feature</p>
+              <p class="support-sub">Tell us what would help you most</p>
+            </div>
+          </div>
+          <div class="support-mini">
+            <div class="support-icon mini" style="background:rgba(61,158,115,0.12); color:var(--success);">
+              <i data-lucide="credit-card"></i>
+            </div>
+            <div>
+              <p class="support-title">Billing help</p>
+              <p class="support-sub">Invoices, refunds, and upgrades</p>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function handleContact(event) {
+    event.preventDefault();
+    const form = document.getElementById('contact-form');
+    const statusEl = document.getElementById('contact-status');
+    const successEl = document.getElementById('contact-success');
+    const submitBtn = document.getElementById('contact-submit');
+    statusEl.style.display = 'inline';
+    successEl.style.display = 'none';
+    submitBtn.disabled = true;
+
+    // Simulated submit (no backend endpoint in this demo)
+    setTimeout(() => {
+      statusEl.style.display = 'none';
+      successEl.style.display = 'inline-block';
+      submitBtn.disabled = false;
+      form.reset();
+    }, 800);
+  }
+  lucide.createIcons();
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Upgrade to Pro{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+  <div class="dashboard-stack">
+    <div class="blob-amber"></div>
+    <div class="blob-lavender"></div>
+
+    <header class="page-heading animate-fade-up">
+      <h1 class="page-title">Upgrade Your Research Workflow</h1>
+      <p class="page-subtitle">Unlock AI-powered outreach, advanced personalization, and priority recommendations.</p>
+    </header>
+
+    <section class="section-card animate-fade-up" style="padding: 1.25rem;">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-3">
+          <span class="filter-pill active" style="padding:0.45rem 1rem;">Monthly</span>
+          <span class="filter-pill" style="padding:0.45rem 1rem;">Yearly (save 15%)</span>
+        </div>
+        <div class="text-sm text-muted-foreground">Cancel anytime.</div>
+      </div>
+    </section>
+
+    <section class="pricing-grid animate-fade-up" style="animation-delay: 80ms;">
+      <!-- Free -->
+      <article class="plan-card">
+        <div class="plan-head">
+          <p class="plan-name">Free</p>
+          <p class="plan-price">$0<span class="plan-cycle">/mo</span></p>
+          <p class="plan-sub">Get started with core matching.</p>
+        </div>
+        <ul class="plan-features">
+          <li>Limited matches per month</li>
+          <li>Basic email templates</li>
+          <li>Manual outreach</li>
+          <li>Community support</li>
+          <li>Basic profile analytics</li>
+        </ul>
+        <button class="btn-outline" style="width:100%; height:2.8rem;" onclick="selectPlan('free')" disabled>Current Plan</button>
+      </article>
+
+      <!-- Plus -->
+      <article class="plan-card plan-featured">
+        <div class="plan-badge">Recommended</div>
+        <div class="plan-head">
+          <p class="plan-name">Plus</p>
+          <p class="plan-price">$29<span class="plan-cycle">/mo</span></p>
+          <p class="plan-sub">Best for active outreach with AI help.</p>
+        </div>
+        <ul class="plan-features">
+          <li>More matches per month</li>
+          <li>AI-generated email drafts</li>
+          <li>Basic analytics dashboard</li>
+          <li>Follow-up reminders</li>
+          <li>Email templates library</li>
+          <li>Email send history</li>
+        </ul>
+        <button class="btn-primary" style="width:100%; height:2.9rem;" onclick="selectPlan('plus')">Upgrade to Plus</button>
+      </article>
+
+      <!-- Pro -->
+      <article class="plan-card">
+        <div class="plan-head">
+          <p class="plan-name">Pro</p>
+          <p class="plan-price">$59<span class="plan-cycle">/mo</span></p>
+          <p class="plan-sub">Full AI personalization and automation.</p>
+        </div>
+        <ul class="plan-features">
+          <li>Unlimited matches</li>
+          <li>Advanced AI personalization</li>
+          <li>Auto follow-ups</li>
+          <li>Priority recommendations</li>
+          <li>Detailed analytics dashboard</li>
+          <li>Priority support</li>
+          <li>Team collaboration</li>
+        </ul>
+        <button class="btn-primary" style="width:100%; height:2.9rem; background: var(--accent);" onclick="selectPlan('pro')">Go Pro</button>
+      </article>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function selectPlan(plan) {
+    alert("Thanks for your interest in the " + plan.toUpperCase() + " plan. Billing is not enabled in this demo environment.");
+  }
+  lucide.createIcons();
+</script>
+{% endblock %}

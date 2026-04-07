@@ -1,0 +1,515 @@
+{% extends "base.html" %}
+{% block title %}ProfMatch AI — Email Dashboard{% endblock %}
+{% block description %}Track every professor email sent, monitor replies, and manage your follow-up pipeline.{% endblock %}
+
+{% block content %}
+
+<!-- ── Page Header ── -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <h1 class="page-title">Email <span class="gradient-text">Dashboard</span></h1>
+    <p class="page-subtitle">Track every email sent, monitor replies, and manage follow-ups in real-time.</p>
+  </div>
+  <div class="page-actions">
+    <a href="/results" class="btn btn-ghost btn-sm">← Professors</a>
+    <button class="btn btn-secondary btn-sm" onclick="openSyncModal()">📥 Sync Gmail</button>
+    <button class="btn btn-secondary btn-sm" onclick="refreshDashboard()">🔄 Refresh</button>
+  </div>
+</div>
+
+<!-- ── Stats Grid ── -->
+<div class="stats-grid" id="stats-grid">
+
+  <div class="stat-card" id="stat-professors">
+    <div class="stat-card-inner">
+      <div class="stat-icon-wrap stat-icon-default">👥</div>
+      <div class="stat-body">
+        <div class="stat-value" id="sv-professors">{{ stats.total_professors }}</div>
+        <div class="stat-label">Professors Found</div>
+        <div class="stat-sub">across all searches</div>
+      </div>
+    </div>
+    <div class="stat-card-bar stat-bar-default"></div>
+  </div>
+
+  <div class="stat-card stat-blue" id="stat-sent">
+    <div class="stat-card-inner">
+      <div class="stat-icon-wrap stat-icon-blue">📤</div>
+      <div class="stat-body">
+        <div class="stat-value stat-val-blue" id="sv-sent">{{ stats.emails_sent }}</div>
+        <div class="stat-label">Emails Sent</div>
+        <div class="stat-sub">{{ stats.sent_today }} sent today</div>
+      </div>
+    </div>
+    <div class="stat-card-bar stat-bar-blue"></div>
+  </div>
+
+  <div class="stat-card stat-green" id="stat-replies">
+    <div class="stat-card-inner">
+      <div class="stat-icon-wrap stat-icon-green">💬</div>
+      <div class="stat-body">
+        <div class="stat-value stat-val-green" id="sv-replies">{{ stats.emails_replied }}</div>
+        <div class="stat-label">Replies Received</div>
+        <div class="stat-sub">
+          {% if stats.emails_sent > 0 %}
+            {{ "%.0f"|format((stats.emails_replied / stats.emails_sent) * 100) }}% reply rate
+          {% else %}
+            send emails to start tracking
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="stat-card-bar stat-bar-green"></div>
+  </div>
+
+  <div class="stat-card stat-purple" id="stat-followups">
+    <div class="stat-card-inner">
+      <div class="stat-icon-wrap stat-icon-purple">⏰</div>
+      <div class="stat-body">
+        <div class="stat-value stat-val-purple" id="sv-followups">{{ stats.follow_ups_pending }}</div>
+        <div class="stat-label">Follow-ups Pending</div>
+        <div class="stat-sub">auto-scheduled at 3 days</div>
+      </div>
+    </div>
+    <div class="stat-card-bar stat-bar-purple"></div>
+  </div>
+
+</div>
+
+<!-- ── Response Rate & Quick Actions ── -->
+<div class="dash-two-col">
+
+  <!-- Response Rate -->
+  <div class="card response-rate-card">
+    <div class="response-rate-header">
+      <div>
+        <h3 class="card-title" style="font-size:16px;margin-bottom:4px;">📈 Response Rate</h3>
+        <p style="font-size:12px;color:var(--text-muted);">Target: 30% response rate</p>
+      </div>
+      <div class="response-rate-big">
+        {% if stats.emails_sent > 0 %}
+          <span class="response-rate-pct">{{ "%.0f"|format((stats.emails_replied / stats.emails_sent) * 100) }}%</span>
+        {% else %}
+          <span class="response-rate-pct" style="color:var(--text-muted);font-size:28px;">—</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="progress-bar-track" style="height:8px;margin:16px 0 10px;">
+      <div class="progress-bar-fill response-bar"
+           style="width: {{ [((stats.emails_replied / stats.emails_sent) * 100)|int, 100]|min if stats.emails_sent > 0 else 0 }}%"></div>
+    </div>
+    <div class="response-rate-legend">
+      <span class="rr-chip rr-sent">📤 {{ stats.emails_sent }} sent</span>
+      <span class="rr-chip rr-replied">💬 {{ stats.emails_replied }} replied</span>
+      <span class="rr-chip rr-pending">⏰ {{ stats.follow_ups_pending }} follow-ups</span>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="card quick-actions-card">
+    <h3 class="card-title" style="font-size:16px;margin-bottom:18px;">⚡ Quick Actions</h3>
+    <div class="quick-action-list">
+      <a href="/" class="quick-action-item">
+        <div class="qa-icon">🔍</div>
+        <div class="qa-info">
+          <div class="qa-title">New Search</div>
+          <div class="qa-desc">Discover more professors</div>
+        </div>
+        <span class="qa-arrow">→</span>
+      </a>
+      <a href="/results" class="quick-action-item">
+        <div class="qa-icon">✉</div>
+        <div class="qa-info">
+          <div class="qa-title">Generate Emails</div>
+          <div class="qa-desc">Open the email studio</div>
+        </div>
+        <span class="qa-arrow">→</span>
+      </a>
+      <div class="quick-action-item" onclick="refreshDashboard()" style="cursor:pointer;">
+        <div class="qa-icon">🔄</div>
+        <div class="qa-info">
+          <div class="qa-title">Refresh Stats</div>
+          <div class="qa-desc">Reload latest numbers</div>
+        </div>
+        <span class="qa-arrow">→</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Email Log ── -->
+<div class="card table-card">
+  <div class="table-header">
+    <div class="table-header-left">
+      <h3 class="table-title">📬 Email Activity Log</h3>
+      {% if email_log %}
+      <span class="table-count-badge">{{ email_log | length }} total</span>
+      {% endif %}
+    </div>
+    <input type="text" id="log-search" class="filter-input" placeholder="🔎  Search by name or email…"
+           oninput="filterLog()" />
+  </div>
+
+  {% if email_log %}
+  <div class="table-wrapper">
+    <table class="data-table" id="email-log-table">
+      <thead>
+        <tr>
+          <th>Professor</th>
+          <th>Email Address</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th style="text-align:center;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="email-log-body">
+        {% for log in email_log %}
+        <tr id="log-row-{{ log.id }}" class="log-row"
+            data-name="{{ log.professor_name | lower }}"
+            data-email="{{ log.professor_email | lower }}">
+          <td class="td-name">
+            <div class="td-avatar">{{ (log.professor_name or '?')[0] }}</div>
+            <div>
+              <strong>{{ log.professor_name or '—' }}</strong>
+              <div class="td-subject">{{ log.subject[:55] }}{% if log.subject|length > 55 %}…{% endif %}</div>
+            </div>
+          </td>
+          <td class="td-email">{{ log.professor_email or '—' }}</td>
+          <td>
+            <span class="type-badge {% if log.email_type == 'followup' %}type-followup{% else %}type-initial{% endif %}">
+              {{ log.email_type | title }}
+            </span>
+          </td>
+          <td>
+            <span class="status-pill status-{{ log.status }}">
+              {% if log.status == 'sent' %}📤 Sent
+              {% elif log.status == 'replied' %}💬 Replied
+              {% elif log.status == 'generated' %}✏️ Draft
+              {% elif log.status == 'preview' %}👁 Preview
+              {% elif log.status == 'bounced' %}❌ Bounced
+              {% else %}{{ log.status | title }}{% endif %}
+            </span>
+          </td>
+          <td class="td-date">
+            <div>{{ log.sent_at[:10] if log.sent_at else log.created_at[:10] }}</div>
+            {% if log.replied_at %}
+            <div class="td-replied">✓ Replied {{ log.replied_at[:10] }}</div>
+            {% endif %}
+          </td>
+          <td style="text-align:center;">
+            <div class="log-actions">
+              <button class="btn-icon-sm" onclick="viewEmailBody({{ log.id }})"
+                      title="View email" aria-label="View email body">👁</button>
+              {% if log.status == 'sent' or log.status == 'preview' %}
+              <button class="btn-icon-sm btn-icon-green"
+                      onclick="markReplied({{ log.id }})"
+                      title="Mark as replied" aria-label="Mark replied">✓</button>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <!-- Empty state for log -->
+  <div class="empty-log-state">
+    <div class="empty-log-icon">📭</div>
+    <h4>No emails logged yet</h4>
+    <p>Go to <a href="/results" class="inline-link">Professors</a> and hit <strong>Generate Email</strong> on any card to start your outreach.</p>
+    <a href="/results" class="btn btn-primary btn-sm" style="margin-top:16px;">Go to Professors →</a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ── Professor Pipeline ── -->
+<div class="card pipeline-card">
+  <div class="table-header" style="padding:22px 28px 16px;">
+    <div class="table-header-left">
+      <h3 class="table-title">👥 Professor Pipeline</h3>
+      {% if professors %}
+      <span class="table-count-badge">{{ professors | length }} tracked</span>
+      {% endif %}
+    </div>
+    {% if professors %}
+    <a href="/results" class="btn btn-ghost btn-sm">View All →</a>
+    {% endif %}
+  </div>
+
+  {% if professors %}
+  <div class="pipeline-grid">
+    {% for prof in professors[:12] %}
+    <div class="pipeline-item">
+      <div class="pipeline-avatar
+        {% if prof.match_score >= 70 %}pa-green
+        {% elif prof.match_score >= 45 %}pa-yellow
+        {% else %}pa-purple{% endif %}">
+        {{ prof.name.split()[0][0] }}{{ prof.name.split()[-1][0] if prof.name.split()|length > 1 else '' }}
+      </div>
+      <div class="pipeline-info">
+        <div class="pipeline-name">{{ prof.name }}</div>
+        <div class="pipeline-uni">{{ (prof.university or 'Unknown')[:36] }}{% if (prof.university or '')|length > 36 %}…{% endif %}</div>
+      </div>
+      <div class="pipeline-right">
+        <span class="score-chip">{{ "%.0f"|format(prof.match_score) }}%</span>
+        <span class="status-pill status-{{ prof.status }}" style="font-size:10px;padding:2px 7px;">{{ prof.status | title }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <!-- Empty Pipeline State -->
+  <div class="empty-pipeline-state">
+    <div class="empty-pipeline-steps">
+      <div class="pipeline-step">
+        <div class="ps-num">1</div>
+        <div class="ps-text">
+          <strong>Fill your profile</strong>
+          <span>Add your research interests & bio</span>
+        </div>
+        <a href="/" class="btn btn-secondary btn-sm">Go →</a>
+      </div>
+      <div class="pipeline-step-connector"></div>
+      <div class="pipeline-step">
+        <div class="ps-num">2</div>
+        <div class="ps-text">
+          <strong>Run a search</strong>
+          <span>AI finds matching professors</span>
+        </div>
+      </div>
+      <div class="pipeline-step-connector"></div>
+      <div class="pipeline-step">
+        <div class="ps-num">3</div>
+        <div class="ps-text">
+          <strong>Send emails</strong>
+          <span>Track replies here automatically</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ── Email Body Viewer Modal ── -->
+<div id="email-view-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="email-view-title">
+  <div class="modal-box modal-box-sm">
+    <div class="modal-header">
+      <h2 class="modal-title" id="email-view-title">📧 Email Preview</h2>
+      <button class="modal-close" onclick="closeViewModal()" aria-label="Close">✕</button>
+    </div>
+    <div class="email-view-meta">
+      <span class="email-view-label">Subject</span>
+      <div id="email-view-subject" class="email-view-subject"></div>
+    </div>
+    <div class="email-view-meta" style="margin-top:14px;">
+      <span class="email-view-label">Body</span>
+      <pre id="email-view-body" class="email-view-body"></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ── Gmail Sync Modal ── -->
+<div id="sync-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sync-modal-title">
+  <div class="modal-box modal-box-sm">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title" id="sync-modal-title">📥 Sync Gmail Sent Folder</h2>
+        <p class="modal-subtitle">Import professor emails you've already sent.</p>
+      </div>
+      <button class="modal-close" id="sync-close-btn" onclick="closeSyncModal()" aria-label="Close">✕</button>
+    </div>
+
+    <!-- Setup State -->
+    <div id="sync-setup">
+      {% if config.email_sending_enabled %}
+      <div class="sync-status-banner sync-banner-ok">
+        ✅ Gmail credentials detected — ready to sync.
+      </div>
+      {% else %}
+      <div class="sync-status-banner sync-banner-warn">
+        ⚠️ Gmail not configured. Add <code>GMAIL_EMAIL</code> and <code>GMAIL_APP_PASSWORD</code> to your <code>.env</code> file first.
+      </div>
+      {% endif %}
+
+      <div class="sync-options">
+        <label class="form-label" for="sync-days">How far back to scan</label>
+        <select id="sync-days" class="form-input" style="max-width:200px;">
+          <option value="30">Last 30 days</option>
+          <option value="90">Last 90 days</option>
+          <option value="180" selected>Last 6 months</option>
+          <option value="365">Last 1 year</option>
+          <option value="730">Last 2 years</option>
+        </select>
+        <p class="sync-hint">
+          The sync scans your Gmail <strong>Sent folder</strong> and automatically detects emails sent to professors (by keywords like "research", "internship", "professor"). Non-professor emails are skipped.
+        </p>
+      </div>
+
+      <div class="sync-footer-actions">
+        <button class="btn btn-ghost btn-sm" onclick="closeSyncModal()">Cancel</button>
+        <button class="btn btn-primary" id="sync-start-btn" onclick="runGmailSync()"
+                {% if not config.email_sending_enabled %}disabled{% endif %}>
+          📥 Start Sync
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress State -->
+    <div id="sync-progress" class="hidden">
+      <div class="sync-progress-icon">📬</div>
+      <p class="sync-progress-msg" id="sync-msg">Connecting to Gmail…</p>
+
+      <div class="progress-bar-track" style="height:10px;margin:16px 0;">
+        <div class="progress-bar-fill" id="sync-bar" style="width:0%"></div>
+      </div>
+      <p class="sync-pct" id="sync-pct">0%</p>
+
+      <div class="sync-live-stats">
+        <div class="sync-stat-chip">
+          <span class="ssc-num" id="ssc-scanned">0</span>
+          <span class="ssc-lbl">Scanned</span>
+        </div>
+        <div class="sync-stat-chip">
+          <span class="ssc-num ssc-green" id="ssc-imported">0</span>
+          <span class="ssc-lbl">Imported</span>
+        </div>
+        <div class="sync-stat-chip">
+          <span class="ssc-num ssc-muted" id="ssc-skipped">0</span>
+          <span class="ssc-lbl">Skipped</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Done State -->
+    <div id="sync-done" class="hidden">
+      <div class="sync-done-icon" id="sync-done-icon">🎉</div>
+      <h3 id="sync-done-title" style="font-size:18px;font-weight:700;margin-bottom:8px;">Sync Complete!</h3>
+      <p id="sync-done-msg" style="color:var(--text-muted);font-size:14px;margin-bottom:20px;"></p>
+      <div class="sync-live-stats" id="sync-final-stats"></div>
+      <div style="display:flex;gap:10px;margin-top:24px;">
+        <button class="btn btn-ghost btn-sm" onclick="closeSyncModal()">Close</button>
+        <button class="btn btn-primary btn-sm" onclick="location.reload()">🔄 Reload Dashboard</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const EMAIL_LOGS    = {{ email_log | tojson }};
+  const PROFESSORS    = {{ professors | tojson }};
+
+  // ── Gmail Sync ──────────────────────────────────────────────
+  let _syncPollInterval = null;
+
+  function openSyncModal() {
+    document.getElementById('sync-setup').classList.remove('hidden');
+    document.getElementById('sync-progress').classList.add('hidden');
+    document.getElementById('sync-done').classList.add('hidden');
+    document.getElementById('sync-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSyncModal() {
+    if (_syncPollInterval) clearInterval(_syncPollInterval);
+    document.getElementById('sync-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  async function runGmailSync() {
+    const days = parseInt(document.getElementById('sync-days').value, 10);
+    const btn = document.getElementById('sync-start-btn');
+    btn.disabled = true;
+
+    // Switch to progress view
+    document.getElementById('sync-setup').classList.add('hidden');
+    document.getElementById('sync-progress').classList.remove('hidden');
+    document.getElementById('sync-close-btn').disabled = true;
+
+    try {
+      const resp = await fetch('/api/sync-gmail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ days_back: days }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json();
+        showSyncError(err.error || 'Failed to start sync.');
+        return;
+      }
+      pollSyncStatus();
+    } catch (e) {
+      showSyncError(e.message);
+    }
+  }
+
+  function pollSyncStatus() {
+    if (_syncPollInterval) clearInterval(_syncPollInterval);
+    _syncPollInterval = setInterval(async () => {
+      try {
+        const resp = await fetch('/api/sync-gmail/status');
+        const data = await resp.json();
+
+        // Update live UI
+        document.getElementById('sync-bar').style.width  = `${data.progress || 0}%`;
+        document.getElementById('sync-pct').textContent   = `${data.progress || 0}%`;
+        document.getElementById('sync-msg').textContent   = data.message || '';
+        document.getElementById('ssc-scanned').textContent  = data.total_scanned || 0;
+        document.getElementById('ssc-imported').textContent = data.imported || 0;
+        document.getElementById('ssc-skipped').textContent  = data.skipped  || 0;
+
+        if (data.status === 'done' || data.status === 'error') {
+          clearInterval(_syncPollInterval);
+          showSyncDone(data);
+        }
+      } catch (e) {
+        console.error('Sync poll error', e);
+      }
+    }, 1200);
+  }
+
+  function showSyncDone(data) {
+    document.getElementById('sync-progress').classList.add('hidden');
+    document.getElementById('sync-done').classList.remove('hidden');
+    document.getElementById('sync-close-btn').disabled = false;
+
+    const isError = data.status === 'error';
+
+    document.getElementById('sync-done-icon').textContent  = isError ? '❌' : '🎉';
+    document.getElementById('sync-done-title').textContent = isError ? 'Sync Failed' : 'Sync Complete!';
+    document.getElementById('sync-done-msg').textContent   = data.message || '';
+
+    if (!isError) {
+      document.getElementById('sync-final-stats').innerHTML = `
+        <div class="sync-stat-chip">
+          <span class="ssc-num">${data.total_scanned}</span>
+          <span class="ssc-lbl">Emails Scanned</span>
+        </div>
+        <div class="sync-stat-chip">
+          <span class="ssc-num ssc-green">${data.imported}</span>
+          <span class="ssc-lbl">Imported</span>
+        </div>
+        <div class="sync-stat-chip">
+          <span class="ssc-num ssc-muted">${data.skipped}</span>
+          <span class="ssc-lbl">Non-professor Skipped</span>
+        </div>
+      `;
+    }
+  }
+
+  function showSyncError(msg) {
+    document.getElementById('sync-setup').classList.add('hidden');
+    document.getElementById('sync-progress').classList.add('hidden');
+    document.getElementById('sync-done').classList.remove('hidden');
+    document.getElementById('sync-close-btn').disabled = false;
+    document.getElementById('sync-done-icon').textContent  = '❌';
+    document.getElementById('sync-done-title').textContent = 'Sync Failed';
+    document.getElementById('sync-done-msg').textContent   = msg;
+  }
+</script>
+{% endblock %}
