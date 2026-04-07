@@ -1,8 +1,8 @@
-# ScholarSync
+# ResearchReach
 
-**ScholarSync: Bridge the gap between your research and the perfect professor. AI-driven matching and automated academic outreach.**
+**ResearchReach: Bridge the gap between your research and the perfect professor. AI-driven matching and automated academic outreach.**
 
-ScholarSync is an intelligent Flask application designed to help students find and match with research professors globally. It uses AI to parse resumes, match research interests, and automate personalized outreach.
+ResearchReach is an intelligent Flask application designed to help students find and match with research professors globally. It uses AI to parse resumes, match research interests, and automate personalized outreach.
 
 ## Features
 
@@ -15,7 +15,7 @@ ScholarSync is an intelligent Flask application designed to help students find a
 ## Project Structure
 
 ```text
-scholar-sync/
+research-reach/
 ├── app/                  # Main application package
 │   ├── core/             # Business logic (Scrapers, Parsers, Matchers)
 │   ├── static/           # CSS, JS, and Images
@@ -30,8 +30,8 @@ scholar-sync/
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/prit12075/scholar-sync.git
-   cd scholar-sync
+   git clone https://github.com/prit12075/research-reach.git
+   cd research-reach
    ```
 
 2. **Create a virtual environment**:
