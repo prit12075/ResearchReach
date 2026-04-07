@@ -15,15 +15,15 @@
     <section class="contact-grid animate-fade-up" style="animation-delay: 60ms;">
       <!-- Contact Form -->
       <article class="section-card">
-        <div class="section-header" style="margin-bottom: var(--space-3);">
+        <header class="section-header" style="margin-bottom: var(--space-3);">
           <div class="section-icon" style="width:2.4rem; height:2.4rem; border-radius:0.8rem; background:rgba(27,43,94,0.1); color:var(--primary);">
             <i data-lucide="headset" style="width:1.1rem; height:1.1rem;"></i>
           </div>
           <div>
-            <p class="section-title">Send us a message</p>
+            <h2 class="section-title" style="font-size: 1.1rem; margin: 0;">Send us a message</h2>
             <p class="section-hint">We usually reply within 24 hours.</p>
           </div>
-        </div>
+        </header>
         <form id="contact-form" class="settings-stack" onsubmit="handleContact(event)">
           <div class="two-col">
             <div class="field">
@@ -55,7 +55,7 @@
             <textarea name="message" rows="4" class="input-control text-area" required placeholder="Tell us more about your question or issue..."></textarea>
           </div>
           <div class="profile-actions" style="justify-content:flex-start;">
-            <button id="contact-submit" class="btn-primary" style="height:2.8rem; min-width:150px;">Send Message</button>
+            <button type="submit" id="contact-submit" class="btn-primary" style="height:2.8rem; min-width:9.375rem;">Send Message</button>
             <span id="contact-status" class="text-sm text-muted-foreground" style="display:none;">Sending...</span>
           </div>
           <div id="contact-success" class="status-badge status-sent" style="display:none; margin-top: var(--space-2);">Message sent successfully!</div>
@@ -64,15 +64,15 @@
 
       <!-- Support Info -->
       <article class="section-card">
-        <div class="section-header" style="margin-bottom: var(--space-3);">
+        <header class="section-header" style="margin-bottom: var(--space-3);">
           <div class="section-icon accent" style="width:2.4rem; height:2.4rem; border-radius:0.8rem;">
             <i data-lucide="info" style="width:1.1rem; height:1.1rem;"></i>
           </div>
           <div>
-            <p class="section-title">Quick help</p>
+            <h2 class="section-title" style="font-size: 1.1rem; margin: 0;">Quick help</h2>
             <p class="section-hint">Fast paths to get you answers.</p>
           </div>
-        </div>
+        </header>
 
         <div class="support-cards">
           <div class="support-item">

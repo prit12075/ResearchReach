@@ -15,11 +15,11 @@
             <p class="text-muted-foreground mt-2 text-lg">Track your conversations and manage your research pipeline.</p>
         </div>
         <div class="flex gap-3">
-            <button class="btn-outline h-11 flex items-center gap-2" onclick="openSyncModal()">
+            <button type="button" class="btn-outline h-11 flex items-center gap-2" onclick="openSyncModal()">
                 <i data-lucide="refresh-ccw" style="width:1rem; height:1rem;"></i>
                 Sync Gmail
             </button>
-            <button class="btn-primary h-11 flex items-center gap-2" onclick="location.reload()">
+            <button type="button" class="btn-primary h-11 flex items-center gap-2" onclick="location.reload()">
                 <i data-lucide="rotate-cw" style="width:1rem; height:1rem;"></i>
                 Refresh
             </button>
@@ -28,8 +28,8 @@
   </div>
 
   <!-- Mini Stats -->
-  <div class="stat-row animate-fade-up" style="animation-delay: 80ms">
-      <div class="stat-compact">
+  <section class="stat-row animate-fade-up" style="animation-delay: 0.08s">
+      <article class="stat-compact">
           <div class="stat-icon-sm stat-icon-primary">
               <i data-lucide="send" style="width:1rem; height:1rem;"></i>
           </div>
@@ -37,8 +37,8 @@
               <p class="stat-label">Emails Sent</p>
               <p class="stat-value-sm">{{ stats.emails_sent }}</p>
           </div>
-      </div>
-      <div class="stat-compact">
+      </article>
+      <article class="stat-compact">
           <div class="stat-icon-sm stat-icon-success">
               <i data-lucide="message-square" style="width:1rem; height:1rem;"></i>
           </div>
@@ -46,8 +46,8 @@
               <p class="stat-label">Replies</p>
               <p class="stat-value-sm">{{ stats.emails_replied }}</p>
           </div>
-      </div>
-      <div class="stat-compact">
+      </article>
+      <article class="stat-compact">
           <div class="stat-icon-sm stat-icon-accent">
               <i data-lucide="clock" style="width:1rem; height:1rem;"></i>
           </div>
@@ -55,11 +55,11 @@
               <p class="stat-label">Pending</p>
               <p class="stat-value-sm">{{ stats.follow_ups_pending }}</p>
           </div>
-      </div>
-  </div>
+      </article>
+  </section>
 
   <!-- Activity Log -->
-  <div class="section-card shadow-warm relative z-10 animate-fade-up" style="animation-delay: 160ms; padding: 1.25rem;">
+  <section class="section-card shadow-warm relative z-10 animate-fade-up" style="animation-delay: 0.16s; padding: 1.25rem;">
       <div class="section-head" style="margin-bottom: var(--space-3); align-items:center; gap: var(--space-3);">
           <div class="flex items-center gap-2">
             <div class="section-icon" style="width:2.2rem; height:2.2rem; border-radius:0.8rem; background:rgba(27,43,94,0.1); color:var(--primary);">
@@ -69,12 +69,12 @@
           </div>
           <div class="flex items-center gap-2" style="flex-wrap:wrap;">
             <div class="filter-tabs" style="gap: var(--space-2);">
-              <button class="filter-pill active">All</button>
-              <button class="filter-pill">Sent</button>
-              <button class="filter-pill">Replied</button>
-              <button class="filter-pill">Pending</button>
+              <button type="button" class="filter-pill active">All</button>
+              <button type="button" class="filter-pill">Sent</button>
+              <button type="button" class="filter-pill">Replied</button>
+              <button type="button" class="filter-pill">Pending</button>
             </div>
-            <div class="relative" style="width: 260px;">
+            <div class="relative" style="width: 16.25rem;">
               <i data-lucide="search" class="absolute" style="left:0.7rem; top:50%; transform:translateY(-50%); width:1rem; height:1rem; color:var(--muted-foreground);"></i>
               <input type="text" placeholder="Search logs..." class="input-control" style="padding-left:2.1rem; height: 2.5rem;">
             </div>
@@ -83,15 +83,11 @@
 
       <div class="email-list">
         {% for log in email_log %}
-        {% set status_class = 'status-pending' %}
-        {% if log.status == 'replied' %}
-          {% set status_class = 'status-sent' %}
-        {% elif log.status == 'sent' %}
-          {% set status_class = 'status-scheduled' %}
-        {% endif %}
-        <div class="feed-card card-lift" style="animation-delay: {{ loop.index0 * 30 }}ms;">
+        <div class="feed-card card-lift" 
+             style="animation-delay: {{ loop.index0 * 0.03 }}s;"
+             data-status="{{ 'replied' if log.status == 'replied' else ('sent' if log.status == 'sent' else 'pending') }}">
           <div class="feed-top">
-            <div class="prof-avatar" style="width:44px; height:44px; font-size:1rem;">
+            <div class="prof-avatar" style="width:2.75rem; height:2.75rem; font-size:1rem;">
               {{ log.professor_name[:1] if log.professor_name else '?' }}
             </div>
             <div class="feed-body">
@@ -108,19 +104,23 @@
             </div>
           </div>
           <div class="feed-actions">
-            <button class="btn-outline" style="height:2.4rem; padding:0 0.9rem;" onclick="event.stopPropagation(); viewEmailDetail({{ log.id }});">
+            <button type="button" class="btn-outline" style="height:2.4rem; padding:0 0.9rem;" 
+                    data-log-id="{{ log.id }}"
+                    onclick="event.stopPropagation(); viewEmailDetail(this.dataset.logId);">
               View
             </button>
             {% if log.status != 'replied' %}
-            <button class="btn-primary" style="height:2.4rem; padding:0 0.9rem;" onclick="event.stopPropagation(); markReplied({{ log.id }});">
+            <button type="button" class="btn-primary" style="height:2.4rem; padding:0 0.9rem;" 
+                    data-log-id="{{ log.id }}"
+                    onclick="event.stopPropagation(); markReplied(this.dataset.logId);">
               Mark Replied
             </button>
             {% endif %}
           </div>
-        </div>
+        </article>
         {% endfor %}
       </div>
-  </div>
+  </section>
 </div>
 
 <!-- Gmail Sync Modal (Integrated) -->
@@ -136,7 +136,7 @@
                     <p class="text-xs text-muted-foreground">Import historical outreach data</p>
                 </div>
             </div>
-            <button onclick="closeSyncModal()" class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center">
+            <button type="button" onclick="closeSyncModal()" class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center">
                 <i data-lucide="x"></i>
             </button>
         </div>
@@ -156,7 +156,7 @@
                 </select>
             </div>
 
-            <button class="w-full btn-primary h-12 shimmer-btn flex items-center justify-center gap-2" onclick="startSync()">
+            <button type="button" class="w-full btn-primary h-12 shimmer-btn flex items-center justify-center gap-2" onclick="startSync()">
                 <i data-lucide="refresh-cw" style="width:1.2rem; height:1.2rem;"></i>
                 Start Gmail Sync
             </button>

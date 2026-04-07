@@ -9,144 +9,181 @@
 
     <header class="page-heading animate-fade-up">
       <h1 class="page-title">Settings</h1>
-      <p class="page-subtitle">Manage your account, email, and personalization preferences.</p>
+      <p class="page-subtitle">Configure your email outreach and manage your data.</p>
     </header>
 
-    <section class="section-card animate-fade-up" style="padding:1.5rem;">
-      <div class="section-header">
-        <div class="section-icon">
-          <i data-lucide="user"></i>
-        </div>
-        <div>
-          <p class="section-title">Account Settings</p>
-          <p class="section-hint">Basic profile details used across the app.</p>
-        </div>
-      </div>
-      <div class="settings-stack">
-        <div class="two-col">
-          <div class="field">
-            <label>Full Name</label>
-            <input type="text" class="input-control" name="account_name" placeholder="Your name">
+    <form action="/settings" method="POST" class="settings-stack animate-fade-up" style="animation-delay: 60ms;">
+      <section class="section-card" style="padding:1.5rem;">
+        <header class="section-header">
+          <div class="section-icon">
+            <i data-lucide="user"></i>
           </div>
-          <div class="field">
-            <label>Role / Title</label>
-            <input type="text" class="input-control" name="account_role" placeholder="Student / Researcher">
+          <div>
+            <h2 class="section-title">Account Settings</h2>
+            <p class="section-hint">Basic profile details used across the app.</p>
           </div>
-        </div>
-        <div class="two-col">
-          <div class="field">
-            <label>Email</label>
-            <input type="email" class="input-control" name="account_email" placeholder="you@university.edu">
-          </div>
-          <div class="field">
-            <label>Timezone</label>
-            <input type="text" class="input-control" name="account_timezone" placeholder="e.g., GMT+5:30">
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section-card animate-fade-up" style="padding:1.5rem; animation-delay: 80ms;">
-      <div class="section-header">
-        <div class="section-icon accent">
-          <i data-lucide="mail"></i>
-        </div>
-        <div>
-          <p class="section-title">Email Settings</p>
-          <p class="section-hint">Configure your provider and delivery preferences.</p>
-        </div>
-      </div>
-
-      <div class="settings-stack">
-        <div class="p-4 bg-secondary/40 rounded-xl border border-border/70" style="margin-bottom: var(--space-3);">
-          <div style="display:flex; align-items:center; gap:0.75rem;">
-            <div class="section-icon" style="width:2.4rem; height:2.4rem; border-radius:0.65rem; background:rgba(27,43,94,0.08); color:var(--primary);">
-              <i data-lucide="mail-check"></i>
+        </header>
+        <div class="settings-stack">
+          <div class="two-col">
+            <div class="field">
+              <label>Full Name</label>
+              <input type="text" class="input-control" name="account_name" placeholder="Your name">
             </div>
+            <div class="field">
+              <label>Role / Title</label>
+              <input type="text" class="input-control" name="account_role" placeholder="Student / Researcher">
+            </div>
+          </div>
+          <div class="two-col">
+            <div class="field">
+              <label>Email</label>
+              <input type="email" class="input-control" name="account_email" placeholder="you@university.edu">
+            </div>
+            <div class="field">
+              <label>Timezone</label>
+              <input type="text" class="input-control" name="account_timezone" placeholder="e.g., GMT+5:30">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card" style="padding:1.5rem;">
+        <header class="section-header" style="margin-bottom: var(--space-4);">
+          <div class="section-icon" style="width:2.4rem; height:2.4rem; border-radius:0.8rem; background:rgba(27,43,94,0.1); color:var(--primary);">
+            <i data-lucide="mail"></i>
+          </div>
+          <div>
+            <h2 class="section-title" style="font-size: 1.1rem; margin: 0;">Email Outreach</h2>
+            <p class="section-hint">Choose how you want to send your emails.</p>
+          </div>
+        </header>
+
+        <div class="settings-stack">
+          <div class="p-4 bg-secondary/40 rounded-xl border border-border/70" style="margin-bottom: var(--space-3);">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <div class="section-icon" style="width:2.4rem; height:2.4rem; border-radius:0.65rem; background:rgba(27,43,94,0.08); color:var(--primary);">
+                <i data-lucide="mail-check"></i>
+              </div>
+              <div>
+                <p class="email-name" style="font-size:0.95rem;">Gmail Connected</p>
+                <p class="email-meta" style="margin:0;">pritpatel@university.edu</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="two-col" style="gap: var(--space-3);">
+            <div class="field">
+              <label>SMTP Host</label>
+              <input type="text" class="input-control" name="smtp_host" placeholder="smtp.gmail.com">
+            </div>
+            <div class="field">
+              <label>SMTP Port</label>
+              <input type="text" class="input-control" name="smtp_port" placeholder="587">
+            </div>
+          </div>
+          <div class="two-col" style="gap: var(--space-3);">
+            <div class="field">
+              <label>SMTP Username</label>
+              <input type="text" class="input-control" name="smtp_user" placeholder="you@university.edu">
+            </div>
+            <div class="field">
+              <label>App Password</label>
+              <input type="password" class="input-control" name="smtp_pass" placeholder="App-specific password">
+            </div>
+          </div>
+          <div class="email-actions" style="justify-content:flex-start;">
+            <button type="button" class="btn-outline" style="height:2.6rem; padding:0 1.1rem;">Configure IMAP/SMTP</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card" style="padding:1.5rem;">
+        <header class="section-header" style="margin-bottom: var(--space-4);">
+          <div class="section-icon" style="background:rgba(232,146,58,0.12); color:var(--accent);">
+            <i data-lucide="bot"></i>
+          </div>
+          <div>
+            <h2 class="section-title" style="font-size: 1.1rem; margin: 0;">Preferences</h2>
+            <p class="section-hint">Control AI, follow-ups, and notifications.</p>
+          </div>
+        </header>
+
+        <div class="settings-stack">
+          <div class="followup-row" style="padding:0.8rem 1rem;">
             <div>
-              <p class="email-name" style="font-size:0.95rem;">Gmail Connected</p>
-              <p class="email-meta" style="margin:0;">pritpatel@university.edu</p>
+              <p class="followup-name">AI Email Generation</p>
+              <p class="followup-univ">Automatically craft personalized outreach emails.</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" name="ai_email_generation" checked>
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+
+          <div class="followup-row" style="padding:0.8rem 1rem;">
+            <div>
+              <p class="followup-name">Smart Follow-ups</p>
+              <p class="followup-univ">Auto-schedule a reminder after 3 days.</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" name="smart_followups">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+
+          <div class="two-col" style="gap: var(--space-3);">
+            <div class="field">
+              <label>Daily Email Limit</label>
+              <input type="number" class="input-control" name="daily_limit" placeholder="10">
+            </div>
+            <div class="field">
+              <label>Follow-up Interval (days)</label>
+              <input type="number" class="input-control" name="followup_days" placeholder="3">
             </div>
           </div>
         </div>
+      </section>
 
-        <div class="two-col" style="gap: var(--space-3);">
-          <div class="field">
-            <label>SMTP Host</label>
-            <input type="text" class="input-control" name="smtp_host" placeholder="smtp.gmail.com">
+      <section class="section-card" style="border-top: 2px solid rgba(225,29,72,0.1);">
+        <header class="section-header" style="margin-bottom: var(--space-4);">
+          <div class="section-icon" style="width:2.4rem; height:2.4rem; border-radius:0.8rem; background:rgba(225,29,72,0.1); color:#E11D48;">
+            <i data-lucide="alert-triangle"></i>
           </div>
-          <div class="field">
-            <label>SMTP Port</label>
-            <input type="text" class="input-control" name="smtp_port" placeholder="587">
-          </div>
-        </div>
-        <div class="two-col" style="gap: var(--space-3);">
-          <div class="field">
-            <label>SMTP Username</label>
-            <input type="text" class="input-control" name="smtp_user" placeholder="you@university.edu">
-          </div>
-          <div class="field">
-            <label>App Password</label>
-            <input type="password" class="input-control" name="smtp_pass" placeholder="App-specific password">
-          </div>
-        </div>
-        <div class="email-actions" style="justify-content:flex-start;">
-          <button class="btn-outline" style="height:2.6rem; padding:0 1.1rem;">Configure IMAP/SMTP</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="section-card animate-fade-up" style="padding:1.5rem; animation-delay: 120ms;">
-      <div class="section-header">
-        <div class="section-icon" style="background:rgba(232,146,58,0.12); color:var(--accent);">
-          <i data-lucide="bot"></i>
-        </div>
-        <div>
-          <p class="section-title">Preferences</p>
-          <p class="section-hint">Control AI, follow-ups, and notifications.</p>
-        </div>
-      </div>
-
-      <div class="settings-stack">
-        <div class="followup-row" style="padding:0.8rem 1rem;">
           <div>
-            <p class="followup-name">AI Email Generation</p>
-            <p class="followup-univ">Automatically craft personalized outreach emails.</p>
+            <h2 class="section-title" style="font-size: 1.1rem; margin: 0; color:#E11D48;">Danger Zone</h2>
+            <p class="section-hint">Irreversible actions for your account data.</p>
           </div>
-          <label class="switch">
-            <input type="checkbox" name="ai_email_generation" checked>
-            <span class="switch-slider"></span>
-          </label>
+        </header>
+        <div class="danger-actions">
+          <div class="danger-item">
+            <div>
+              <p class="danger-label">Refresh Database</p>
+              <p class="danger-desc">Clears cache and re-syncs all professor data.</p>
+            </div>
+            <button type="button" class="btn-outline btn-sm" style="color:#E11D48; border-color:rgba(225,29,72,0.2);">Refresh</button>
+          </div>
+          <div class="danger-item">
+            <div>
+              <p class="danger-label">Reset All Profiles</p>
+              <p class="danger-desc">Removes all uploaded resumes and parsed data.</p>
+            </div>
+            <button type="button" class="btn-outline btn-sm" style="color:#E11D48; border-color:rgba(225,29,72,0.2);">Reset</button>
+          </div>
+          <div class="danger-item">
+            <div>
+              <p class="danger-label">Delete Account</p>
+              <p class="danger-desc">Permanently delete your account and all data.</p>
+            </div>
+            <button type="button" class="btn-primary btn-sm" style="background:#E11D48; border:none;">Delete</button>
+          </div>
         </div>
+      </section>
 
-        <div class="followup-row" style="padding:0.8rem 1rem;">
-          <div>
-            <p class="followup-name">Smart Follow-ups</p>
-            <p class="followup-univ">Auto-schedule a reminder after 3 days.</p>
-          </div>
-          <label class="switch">
-            <input type="checkbox" name="smart_followups">
-            <span class="switch-slider"></span>
-          </label>
-        </div>
-
-        <div class="two-col" style="gap: var(--space-3);">
-          <div class="field">
-            <label>Daily Email Limit</label>
-            <input type="number" class="input-control" name="daily_limit" placeholder="10">
-          </div>
-          <div class="field">
-            <label>Follow-up Interval (days)</label>
-            <input type="number" class="input-control" name="followup_days" placeholder="3">
-          </div>
-        </div>
+      <div class="profile-actions" style="justify-content:flex-start; margin-top: var(--space-4);">
+        <button type="submit" class="btn-primary" style="height:3rem; padding:0 1.5rem;">Save Changes</button>
+        <button type="button" class="btn-outline" style="height:3rem; padding:0 1.5rem;">Cancel</button>
       </div>
-    </section>
-
-    <div class="profile-actions" style="justify-content:flex-start;">
-      <button class="btn-primary" style="height:3rem; padding:0 1.5rem;">Save Changes</button>
-      <button class="btn-outline" style="height:3rem; padding:0 1.5rem;">Cancel</button>
-    </div>
+    </form>
   </div>
 </div>
 {% endblock %}

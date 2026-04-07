@@ -7,9 +7,9 @@
     <div class="blob-amber"></div>
     <div class="blob-lavender"></div>
 
-    <header class="page-heading animate-fade-up">
-      <h1 class="page-title">Upgrade Your Research Workflow</h1>
-      <p class="page-subtitle">Unlock AI-powered outreach, advanced personalization, and priority recommendations.</p>
+    <header class="text-center mb-12 animate-fade-up">
+      <h1 class="page-title" style="font-size: 2.25rem;">Upgrade to Pro</h1>
+      <p class="page-subtitle" style="font-size: 1.1rem; max-width: 32.5rem; margin: 0.5rem auto 0;">Scale your research outreach with AI-powered features and unlimited matches.</p>
     </header>
 
     <section class="section-card animate-fade-up" style="padding: 1.25rem;">
@@ -23,13 +23,13 @@
     </section>
 
     <section class="pricing-grid animate-fade-up" style="animation-delay: 80ms;">
-      <!-- Free -->
-      <article class="plan-card">
-        <div class="plan-head">
-          <p class="plan-name">Free</p>
-          <p class="plan-price">$0<span class="plan-cycle">/mo</span></p>
-          <p class="plan-sub">Get started with core matching.</p>
-        </div>
+      <!-- Free Plan -->
+      <article class="pricing-card">
+        <header class="pricing-header">
+          <h2 class="pricing-name">Free</h2>
+          <div class="pricing-price">$0<span>/mo</span></div>
+        </header>
+        <p class="plan-sub">Get started with core matching.</p>
         <ul class="plan-features">
           <li>Limited matches per month</li>
           <li>Basic email templates</li>
@@ -37,17 +37,19 @@
           <li>Community support</li>
           <li>Basic profile analytics</li>
         </ul>
-        <button class="btn-outline" style="width:100%; height:2.8rem;" onclick="selectPlan('free')" disabled>Current Plan</button>
+        <footer class="pricing-footer">
+          <button type="button" class="btn-outline w-full" disabled>Current Plan</button>
+        </footer>
       </article>
 
-      <!-- Plus -->
-      <article class="plan-card plan-featured">
-        <div class="plan-badge">Recommended</div>
-        <div class="plan-head">
-          <p class="plan-name">Plus</p>
-          <p class="plan-price">$29<span class="plan-cycle">/mo</span></p>
-          <p class="plan-sub">Best for active outreach with AI help.</p>
-        </div>
+      <!-- Pro Plan -->
+      <article class="pricing-card pricing-featured">
+        <div class="pricing-badge">Most Popular</div>
+        <header class="pricing-header">
+          <h2 class="pricing-name">Pro Researcher</h2>
+          <div class="pricing-price" style="color: white;">$19<span>/mo</span></div>
+        </header>
+        <p class="plan-sub">Best for active outreach with AI help.</p>
         <ul class="plan-features">
           <li>More matches per month</li>
           <li>AI-generated email drafts</li>
@@ -56,16 +58,18 @@
           <li>Email templates library</li>
           <li>Email send history</li>
         </ul>
-        <button class="btn-primary" style="width:100%; height:2.9rem;" onclick="selectPlan('plus')">Upgrade to Plus</button>
+        <footer class="pricing-footer">
+          <button type="button" class="btn-primary w-full" style="background: white; color: var(--primary); border: none;" onclick="selectPlan('plus')">Upgrade Now</button>
+        </footer>
       </article>
 
-      <!-- Pro -->
-      <article class="plan-card">
-        <div class="plan-head">
-          <p class="plan-name">Pro</p>
-          <p class="plan-price">$59<span class="plan-cycle">/mo</span></p>
-          <p class="plan-sub">Full AI personalization and automation.</p>
-        </div>
+      <!-- Yearly Plan -->
+      <article class="pricing-card">
+        <header class="pricing-header">
+          <h2 class="pricing-name">Academic Year</h2>
+          <div class="pricing-price">$149<span>/yr</span></div>
+        </header>
+        <p class="plan-sub">Full AI personalization and automation.</p>
         <ul class="plan-features">
           <li>Unlimited matches</li>
           <li>Advanced AI personalization</li>

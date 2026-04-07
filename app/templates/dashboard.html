@@ -12,15 +12,15 @@
   </div>
   <div class="page-actions">
     <a href="/results" class="btn btn-ghost btn-sm">← Professors</a>
-    <button class="btn btn-secondary btn-sm" onclick="openSyncModal()">📥 Sync Gmail</button>
-    <button class="btn btn-secondary btn-sm" onclick="refreshDashboard()">🔄 Refresh</button>
+    <button type="button" class="btn btn-secondary btn-sm" onclick="openSyncModal()">📥 Sync Gmail</button>
+    <button type="button" class="btn btn-secondary btn-sm" onclick="refreshDashboard()">🔄 Refresh</button>
   </div>
 </div>
 
 <!-- ── Stats Grid ── -->
-<div class="stats-grid" id="stats-grid">
+<section class="stats-grid" id="stats-grid">
 
-  <div class="stat-card" id="stat-professors">
+  <article class="stat-card" id="stat-professors">
     <div class="stat-card-inner">
       <div class="stat-icon-wrap stat-icon-default">👥</div>
       <div class="stat-body">
@@ -30,9 +30,9 @@
       </div>
     </div>
     <div class="stat-card-bar stat-bar-default"></div>
-  </div>
+  </article>
 
-  <div class="stat-card stat-blue" id="stat-sent">
+  <article class="stat-card stat-blue" id="stat-sent">
     <div class="stat-card-inner">
       <div class="stat-icon-wrap stat-icon-blue">📤</div>
       <div class="stat-body">
@@ -42,9 +42,9 @@
       </div>
     </div>
     <div class="stat-card-bar stat-bar-blue"></div>
-  </div>
+  </article>
 
-  <div class="stat-card stat-green" id="stat-replies">
+  <article class="stat-card stat-green" id="stat-replies">
     <div class="stat-card-inner">
       <div class="stat-icon-wrap stat-icon-green">💬</div>
       <div class="stat-body">
@@ -60,9 +60,9 @@
       </div>
     </div>
     <div class="stat-card-bar stat-bar-green"></div>
-  </div>
+  </article>
 
-  <div class="stat-card stat-purple" id="stat-followups">
+  <article class="stat-card stat-purple" id="stat-followups">
     <div class="stat-card-inner">
       <div class="stat-icon-wrap stat-icon-purple">⏰</div>
       <div class="stat-body">
@@ -72,38 +72,35 @@
       </div>
     </div>
     <div class="stat-card-bar stat-bar-purple"></div>
-  </div>
+  </article>
 
-</div>
+</section>
 
 <!-- ── Response Rate & Quick Actions ── -->
-<div class="dash-two-col">
+<section class="dash-two-col">
 
   <!-- Response Rate -->
-  <div class="card response-rate-card">
+  <article class="card response-rate-card">
     <div class="response-rate-header">
       <div>
         <h3 class="card-title" style="font-size:16px;margin-bottom:4px;">📈 Response Rate</h3>
         <p style="font-size:12px;color:var(--text-muted);">Target: 30% response rate</p>
       </div>
       <div class="response-rate-big">
-        {% if stats.emails_sent > 0 %}
-          <span class="response-rate-pct">{{ "%.0f"|format((stats.emails_replied / stats.emails_sent) * 100) }}%</span>
-        {% else %}
-          <span class="response-rate-pct" style="color:var(--text-muted);font-size:28px;">—</span>
-        {% endif %}
+        <span class="response-rate-pct" id="rr-pct">—</span>
       </div>
     </div>
     <div class="progress-bar-track" style="height:8px;margin:16px 0 10px;">
-      <div class="progress-bar-fill response-bar"
-           style="width: {{ [((stats.emails_replied / stats.emails_sent) * 100)|int, 100]|min if stats.emails_sent > 0 else 0 }}%"></div>
+      <div class="progress-bar-fill response-bar" id="rr-bar"
+           data-sent="{{ stats.emails_sent }}"
+           data-replied="{{ stats.emails_replied }}"></div>
     </div>
     <div class="response-rate-legend">
       <span class="rr-chip rr-sent">📤 {{ stats.emails_sent }} sent</span>
       <span class="rr-chip rr-replied">💬 {{ stats.emails_replied }} replied</span>
       <span class="rr-chip rr-pending">⏰ {{ stats.follow_ups_pending }} follow-ups</span>
     </div>
-  </div>
+  </article>
 
   <!-- Quick Actions -->
   <div class="card quick-actions-card">
@@ -156,12 +153,12 @@
     <table class="data-table" id="email-log-table">
       <thead>
         <tr>
-          <th>Professor</th>
-          <th>Email Address</th>
-          <th>Type</th>
-          <th>Status</th>
-          <th>Date</th>
-          <th style="text-align:center;">Actions</th>
+          <th scope="col">Professor</th>
+          <th scope="col">Email Address</th>
+          <th scope="col">Type</th>
+          <th scope="col">Status</th>
+          <th scope="col">Date</th>
+          <th scope="col" style="text-align:center;">Actions</th>
         </tr>
       </thead>
       <tbody id="email-log-body">
@@ -200,11 +197,14 @@
           </td>
           <td style="text-align:center;">
             <div class="log-actions">
-              <button class="btn-icon-sm" onclick="viewEmailBody({{ log.id }})"
+              <button type="button" class="btn-icon-sm" 
+                      data-log-id="{{ log.id }}"
+                      onclick="viewEmailBody(this.dataset.logId)"
                       title="View email" aria-label="View email body">👁</button>
               {% if log.status == 'sent' or log.status == 'preview' %}
-              <button class="btn-icon-sm btn-icon-green"
-                      onclick="markReplied({{ log.id }})"
+              <button type="button" class="btn-icon-sm btn-icon-green"
+                      data-log-id="{{ log.id }}"
+                      onclick="markReplied(this.dataset.logId)"
                       title="Mark as replied" aria-label="Mark replied">✓</button>
               {% endif %}
             </div>
@@ -254,8 +254,13 @@
         <div class="pipeline-uni">{{ (prof.university or 'Unknown')[:36] }}{% if (prof.university or '')|length > 36 %}…{% endif %}</div>
       </div>
       <div class="pipeline-right">
-        <span class="score-chip">{{ "%.0f"|format(prof.match_score) }}%</span>
-        <span class="status-pill status-{{ prof.status }}" style="font-size:10px;padding:2px 7px;">{{ prof.status | title }}</span>
+        <svg class="feed-match-circle" viewBox="0 0 40 40" style="width:32px;height:32px;">
+          <circle cx="20" cy="20" r="18" fill="none" stroke="var(--secondary)" stroke-width="3"></circle>
+          <circle cx="20" cy="20" r="18" fill="none" stroke="var(--accent)" stroke-width="3" 
+            class="feed-match-ring"
+            data-score="{{ prof.match_score or 0 }}"
+            stroke-linecap="round" transform="rotate(-90 20 20)"></circle>
+        </svg>
       </div>
     </div>
     {% endfor %}
@@ -298,7 +303,7 @@
   <div class="modal-box modal-box-sm">
     <div class="modal-header">
       <h2 class="modal-title" id="email-view-title">📧 Email Preview</h2>
-      <button class="modal-close" onclick="closeViewModal()" aria-label="Close">✕</button>
+      <button type="button" class="modal-close" onclick="closeViewModal()" aria-label="Close">✕</button>
     </div>
     <div class="email-view-meta">
       <span class="email-view-label">Subject</span>
@@ -321,7 +326,7 @@
         <h2 class="modal-title" id="sync-modal-title">📥 Sync Gmail Sent Folder</h2>
         <p class="modal-subtitle">Import professor emails you've already sent.</p>
       </div>
-      <button class="modal-close" id="sync-close-btn" onclick="closeSyncModal()" aria-label="Close">✕</button>
+      <button type="button" class="modal-close" id="sync-close-btn" onclick="closeSyncModal()" aria-label="Close">✕</button>
     </div>
 
     <!-- Setup State -->
@@ -351,8 +356,8 @@
       </div>
 
       <div class="sync-footer-actions">
-        <button class="btn btn-ghost btn-sm" onclick="closeSyncModal()">Cancel</button>
-        <button class="btn btn-primary" id="sync-start-btn" onclick="runGmailSync()"
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeSyncModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" id="sync-start-btn" onclick="runGmailSync()"
                 {% if not config.email_sending_enabled %}disabled{% endif %}>
           📥 Start Sync
         </button>
@@ -392,17 +397,43 @@
       <p id="sync-done-msg" style="color:var(--text-muted);font-size:14px;margin-bottom:20px;"></p>
       <div class="sync-live-stats" id="sync-final-stats"></div>
       <div style="display:flex;gap:10px;margin-top:24px;">
-        <button class="btn btn-ghost btn-sm" onclick="closeSyncModal()">Close</button>
-        <button class="btn btn-primary btn-sm" onclick="location.reload()">🔄 Reload Dashboard</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeSyncModal()">Close</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="location.reload()">🔄 Reload Dashboard</button>
       </div>
     </div>
 
   </div>
 </div>
 
+<script id="email-logs-data" type="application/json">{{ email_log | tojson | safe }}</script>
+<script id="professors-data" type="application/json">{{ professors | tojson | safe }}</script>
+<script id="stats-data" type="application/json">{{ stats | tojson | safe }}</script>
+
 <script>
-  const EMAIL_LOGS    = {{ email_log | tojson }};
-  const PROFESSORS    = {{ professors | tojson }};
+  document.addEventListener('DOMContentLoaded', () => {
+    // Response Rate Bar
+    const rrBar = document.getElementById('rr-bar');
+    const rrPct = document.getElementById('rr-pct');
+    if (rrBar) {
+      const sent = Number(rrBar.dataset.sent || 0);
+      const replied = Number(rrBar.dataset.replied || 0);
+      const pct = sent > 0 ? Math.round((replied / sent) * 100) : 0;
+      rrBar.style.width = pct + '%';
+      rrPct.textContent = pct + '%';
+    }
+
+    // Match Rings
+    document.querySelectorAll('.feed-match-ring').forEach(ring => {
+      const score = Number(ring.dataset.score || 0);
+      const dash = (score / 100) * 113.1;
+      ring.setAttribute('stroke-dasharray', `${dash.toFixed(2)} 113.1`);
+    });
+  });
+
+  // Core state from server
+  const EMAIL_LOGS    = JSON.parse(document.getElementById('email-logs-data').textContent);
+  const PROFESSORS    = JSON.parse(document.getElementById('professors-data').textContent);
+  const STATS         = JSON.parse(document.getElementById('stats-data').textContent);
 
   // ── Gmail Sync ──────────────────────────────────────────────
   let _syncPollInterval = null;

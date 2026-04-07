@@ -8,62 +8,64 @@
   <div class="blob-lavender"></div>
 
   <!-- Header -->
-  <div class="relative z-10 animate-fade-up">
+  <header class="relative z-10 animate-fade-up">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
             <h1 class="page-title" style="margin-bottom: var(--space-1);">Professor Matches</h1>
             <p class="page-subtitle" style="margin:0;">Found <span class="text-primary font-bold">{{ professors | length }}</span> researchers aligned with your profile.</p>
         </div>
         <div class="flex flex-wrap md:flex-nowrap items-center gap-3">
-            <button class="btn-outline" style="height: 2.6rem;" onclick="location.href='/profile'">
+            <button type="button" class="btn-outline" style="height: 2.6rem;" onclick="location.href='/profile'">
                 <i data-lucide="refresh-cw" style="width:1rem; height:1rem;"></i>
                 Refine Search
             </button>
-            <button class="btn-primary" style="height: 2.6rem;" onclick="exportResults()">
+            <button type="button" class="btn-primary" style="height: 2.6rem;" onclick="exportResults()">
                 <i data-lucide="download" style="width:1rem; height:1rem;"></i>
                 Export Results
             </button>
         </div>
     </div>
-  </div>
+  </header>
 
   <!-- Filter Pills -->
-  <div class="filter-tabs relative z-10 animate-fade-up" style="animation-delay: 80ms; margin-top: var(--space-3); gap: var(--space-3); flex-wrap: wrap;">
-      <button class="filter-pill active" style="padding: 0.6rem 1.15rem;">All Matches</button>
-      <button class="filter-pill" style="padding: 0.6rem 1.15rem;">Excellent (>80%)</button>
-      <button class="filter-pill" style="padding: 0.6rem 1.15rem;">New Matches</button>
-      <button class="filter-pill" style="padding: 0.6rem 1.15rem;">Contacted</button>
-  </div>
+  <nav class="filter-tabs relative z-10 animate-fade-up" style="animation-delay: 80ms; margin-top: var(--space-3); gap: var(--space-3); flex-wrap: wrap;">
+      <button type="button" class="filter-pill active" style="padding: 0.6rem 1.15rem;">All Matches</button>
+      <button type="button" class="filter-pill" style="padding: 0.6rem 1.15rem;">Excellent (>80%)</button>
+      <button type="button" class="filter-pill" style="padding: 0.6rem 1.15rem;">New Matches</button>
+      <button type="button" class="filter-pill" style="padding: 0.6rem 1.15rem;">Contacted</button>
+  </nav>
 
   <!-- Results Grid -->
-  <div class="results-grid relative z-10" style="margin-top: var(--space-4);">
+  <section class="results-grid relative z-10" style="margin-top: var(--space-4);">
     {% for prof in professors %}
-    <div class="match-card animate-fade-up cursor-pointer" 
+    <article class="match-card animate-fade-up cursor-pointer" 
          style="animation-delay: {{ loop.index0 * 50 }}ms"
-         onclick="showProfessorDetail({{ prof.id }})">
+         data-prof-id="{{ prof.id }}"
+         onclick="showProfessorDetail(this.dataset.profId)">
       
-      <div class="match-header">
+      <header class="match-header">
         <div class="match-avatar">
-          <svg class="match-ring" viewBox="0 0 88 88">
+          <svg class="match-ring" viewBox="0 0 88 88" aria-hidden="true">
             <circle cx="44" cy="44" r="40" fill="none" stroke="var(--secondary)" stroke-width="3"></circle>
             <circle cx="44" cy="44" r="40" fill="none" stroke="var(--accent)" stroke-width="3.5"
-              stroke-dasharray="{{ ((prof.match_score or 0) / 100) * 251 | round(2) }} 251"
+              class="match-ring-fill"
+              data-score="{{ prof.match_score or 0 }}"
               stroke-linecap="round" transform="rotate(-90 44 44)"></circle>
           </svg>
-          <div class="prof-avatar" style="width:60px; height:60px; font-size:1.1rem;">
+          <div class="prof-avatar" style="width:3.75rem; height:3.75rem; font-size:1.1rem;">
             {% if prof.image_url %}
-              <img src="{{ prof.image_url }}" alt="{{ prof.name }} headshot" class="prof-avatar-img">
+              <img src="{{ prof.image_url }}" alt="{{ prof.name or 'Professor' }}'s headshot" class="prof-avatar-img">
             {% else %}
               <span class="prof-avatar-initial">{{ prof.name[:1] if prof.name else '?' }}</span>
             {% endif %}
           </div>
         </div>
         <div style="flex:1;">
-          <p class="match-name">{{ prof.name }}</p>
+          <h2 class="match-name" style="font-size: 1.05rem;">{{ prof.name }}</h2>
           <p class="match-meta">{{ prof.title or 'Faculty Member' }} · {{ prof.university }}</p>
         </div>
         <span class="match-score-badge">{{ prof.match_score | int }}%</span>
-      </div>
+      </header>
 
       <div class="match-tags">
         {% for area in prof.research_areas[:3] %}
@@ -71,7 +73,7 @@
         {% endfor %}
       </div>
 
-      <div class="match-footer">
+      <footer class="match-footer">
         <div style="display:flex; align-items:center; gap:0.35rem;">
             <i data-lucide="book-open" style="width:0.95rem; height:0.95rem;"></i>
             <span>{{ prof.publication_count or 0 }} Pubs</span>
@@ -80,10 +82,10 @@
             <span>Details</span>
             <i data-lucide="chevron-right" style="width:0.9rem; height:0.9rem;"></i>
         </div>
-      </div>
-    </div>
+      </footer>
+    </article>
     {% endfor %}
-  </div>
+  </section>
 
   {% if not professors %}
   <div class="text-center py-20 animate-fade-up">
@@ -118,19 +120,19 @@
     
     const content = `
       <div class="p-8 space-y-8">
-        <div class="flex items-center justify-between">
-            <button onclick="closePanel()" class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center transition-colors">
+        <header class="flex items-center justify-between">
+            <button type="button" onclick="closePanel()" class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center transition-colors">
                 <i data-lucide="x"></i>
             </button>
             <div class="flex gap-2">
-                <button class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center transition-colors">
+                <button type="button" class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center transition-colors">
                     <i data-lucide="share-2"></i>
                 </button>
-                <button class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center transition-colors">
+                <button type="button" class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center transition-colors">
                     <i data-lucide="star"></i>
                 </button>
             </div>
-        </div>
+        </header>
 
         <div class="text-center">
             <div class="prof-avatar prof-avatar-lg" style="background: var(--primary); color: #fff; margin: 0 auto 1rem;">
@@ -180,12 +182,12 @@
         </div>
 
         <div class="pt-8 space-y-3">
-            <button class="w-full btn-primary h-12 flex items-center justify-center gap-2 group" onclick="startOutreach(${prof.id})">
+            <button type="button" class="w-full btn-primary h-12 flex items-center justify-center gap-2 group" onclick="startOutreach(${prof.id})">
                 <i data-lucide="sparkles" style="width:1.2rem; height:1.2rem;"></i>
                 Generate AI Outreach
                 <i data-lucide="arrow-right" class="group-hover:translate-x-1 transition-transform" style="width:1.2rem; height:1.2rem;"></i>
             </button>
-            <button class="w-full btn-outline h-12 flex items-center justify-center gap-2" onclick="window.open('${prof.scholar_url || '#'}', '_blank')">
+            <button type="button" class="w-full btn-outline h-12 flex items-center justify-center gap-2" onclick="window.open('${prof.scholar_url || '#'}', '_blank')">
                 <i data-lucide="external-link" style="width:1rem; height:1rem;"></i>
                 View Academic Profile
             </button>

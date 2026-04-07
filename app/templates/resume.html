@@ -32,8 +32,8 @@
               <p class="upload-title">Resume uploaded successfully</p>
               <p class="upload-sub">Aryan_Patel_Resume.pdf</p>
               <div class="upload-actions">
-                <button class="btn-outline" style="height: 2.6rem; font-size: 0.8rem;" onclick="document.getElementById('resume-upload').click()">
-                    <i data-lucide="upload" style="width:12px; height:12px;"></i>
+                <button type="button" class="btn-outline" style="height: 2.6rem; font-size: 0.8rem;" onclick="document.getElementById('resume-upload').click()">
+                    <i data-lucide="upload" style="width:0.75rem; height:0.75rem;"></i>
                     Upload New Resume
                 </button>
               </div>
@@ -89,33 +89,33 @@
           <i data-lucide="briefcase" style="width:1.2rem; height:1.2rem;"></i>
         </div>
         <div>
-          <p class="section-title">Experience</p>
+          <h2 class="section-title" style="font-size: 1.1rem; margin: 0;">Experience</h2>
           <p class="section-hint">Extracted from your resume</p>
         </div>
       </div>
 
       <div class="resume-stack" style="gap: 1rem;">
-          <div class="experience-card">
+          <article class="experience-card">
               <div class="experience-meta">
                   <div>
-                      <p class="experience-title">Research Assistant</p>
+                      <h3 class="experience-title" style="font-size: 1rem; margin: 0;">Research Assistant</h3>
                       <p class="experience-org">UC San Diego – ML Lab</p>
                   </div>
                   <span class="experience-date">2024 — Present</span>
               </div>
               <p class="experience-body">Developed novel contrastive learning methods for medical image analysis.</p>
-          </div>
+          </article>
 
-          <div class="experience-card" style="border-left-color: #1B2B5E;">
+          <article class="experience-card" style="border-left-color: #1B2B5E;">
               <div class="experience-meta">
                   <div>
-                      <p class="experience-title">Software Engineering Intern</p>
+                      <h3 class="experience-title" style="font-size: 1rem; margin: 0;">Software Engineering Intern</h3>
                       <p class="experience-org" style="color: #1B2B5E;">Google Research</p>
                   </div>
                   <span class="experience-date">Summer 2024</span>
               </div>
               <p class="experience-body">Worked on large-scale vision models for autonomous systems.</p>
-          </div>
+          </article>
       </div>
     </section>
 
@@ -126,11 +126,11 @@
                 <i data-lucide="user" style="width:1.2rem; height:1.2rem;"></i>
             </div>
             <div>
-                <p class="section-title">Profile Details</p>
+                <h2 class="section-title" style="font-size: 1.1rem; margin: 0;">Profile Details</h2>
                 <p class="section-hint">Information used for personalized email outreach</p>
             </div>
         </div>
-        <button class="btn-primary" style="height: 2.75rem; padding: 0 var(--space-5);" onclick="launchSearch()" id="search-btn">
+        <button type="button" class="btn-primary" style="height: 2.75rem; padding: 0 var(--space-5);" onclick="launchSearch()" id="search-btn">
             Launch Search
         </button>
       </div>
@@ -174,7 +174,7 @@
 </div>
 
   <!-- Search Overlay (Simulated Progress) -->
-  <div id="search-overlay" class="search-overlay">
+  <aside id="search-overlay" class="search-overlay" role="dialog" aria-modal="true" aria-labelledby="progress-text">
       <div class="search-shell">
           <div class="search-illustration">
               <i data-lucide="search" style="width:2.5rem; height:2.5rem; color: var(--primary);"></i>
@@ -190,7 +190,7 @@
               <span id="progress-source">Semantic Scholar</span>
           </div>
       </div>
-  </div>
+  </aside>
 </div>
 {% endblock %}
 
