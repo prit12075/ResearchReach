@@ -7,14 +7,14 @@ main.content-area {
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 0.5rem;
 }
 ::-webkit-scrollbar-track {
   background: var(--background);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 10px;
+  border-radius: 0.625rem;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
@@ -81,8 +81,8 @@ main.content-area {
 
 /* Orbit Animation for Search Overlay */
 @keyframes orbit {
-    0% { transform: rotate(0deg) translateX(10px) rotate(0deg); }
-    100% { transform: rotate(360deg) translateX(10px) rotate(-360deg); }
+    0% { transform: rotate(0deg) translateX(0.625rem) rotate(0deg); }
+    100% { transform: rotate(360deg) translateX(0.625rem) rotate(-360deg); }
 }
 .animate-orbit {
     animation: orbit 4s linear infinite;
@@ -90,7 +90,7 @@ main.content-area {
 
 /* Fade Up Animation */
 @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(1.25rem); }
     to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-up {
@@ -100,7 +100,7 @@ main.content-area {
 /* Floating Avatars */
 @keyframes float {
     0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-10px) rotate(2deg); }
+    50% { transform: translateY(-0.625rem) rotate(2deg); }
 }
 .animate-float { animation: float 6s ease-in-out infinite; }
 .animate-float-delayed { animation: float 7s ease-in-out infinite 1s; }
@@ -109,7 +109,7 @@ main.content-area {
 /* Dot Pattern Utility */
 .dot-pattern {
     background-image: radial-gradient(var(--border) 1px, transparent 1px);
-    background-size: 20px 20px;
+    background-size: 1.25rem 1.25rem;
 }
 
 /* Card & Button Polishing */
@@ -117,7 +117,7 @@ main.content-area {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
 }
 .card-lift:hover {
-    transform: translateY(-4px);
+    transform: translateY(-0.25rem);
     box-shadow: var(--shadow-warm-lg);
 }
 
