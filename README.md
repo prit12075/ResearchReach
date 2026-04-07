@@ -1,6 +1,8 @@
-# Professor Finder AI
+# ScholarSync
 
-An intelligent Flask application designed to help students find and match with research professors globally. It uses AI to parse resumes, match research interests, and automate personalized outreach.
+**ScholarSync: Bridge the gap between your research and the perfect professor. AI-driven matching and automated academic outreach.**
+
+ScholarSync is an intelligent Flask application designed to help students find and match with research professors globally. It uses AI to parse resumes, match research interests, and automate personalized outreach.
 
 ## Features
 
@@ -13,7 +15,7 @@ An intelligent Flask application designed to help students find and match with r
 ## Project Structure
 
 ```text
-professor-finder/
+scholar-sync/
 ├── app/                  # Main application package
 │   ├── core/             # Business logic (Scrapers, Parsers, Matchers)
 │   ├── static/           # CSS, JS, and Images
@@ -28,8 +30,8 @@ professor-finder/
 
 1. **Clone the repository**:
    ```bash
-   git clone <your-repo-url>
-   cd professor-finder
+   git clone https://github.com/prit12075/scholar-sync.git
+   cd scholar-sync
    ```
 
 2. **Create a virtual environment**:

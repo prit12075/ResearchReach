@@ -23,7 +23,7 @@ if __name__ == "__main__":
     logger.info("Initializing scheduler...")
     start_scheduler(db, email_system)
     
-    logger.info(f"Starting Professor Finder on port {config.FLASK_PORT}")
+    logger.info(f"Starting ScholarSync on port {config.FLASK_PORT}")
     app.run(
         host="0.0.0.0",
         port=int(config.FLASK_PORT),
