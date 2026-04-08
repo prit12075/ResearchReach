@@ -99,7 +99,9 @@
               <p class="feed-preview">{{ (log.body or '')[:140] }}{% if log.body and log.body|length > 140 %}…{% endif %}</p>
             </div>
             <div class="feed-meta">
-              <span class="status-badge {{ status_class }}">{{ log.status | capitalize }}</span>
+              <span class="status-badge {{ 'badge-success' if log.status == 'replied' else ('badge-primary' if log.status == 'sent' else 'badge-warning') }}">
+                {{ log.status | capitalize }}
+              </span>
               <span class="feed-date">{{ log.sent_at[:10] if log.sent_at else log.created_at[:10] }}</span>
             </div>
           </div>
@@ -117,7 +119,7 @@
             </button>
             {% endif %}
           </div>
-        </article>
+          </div>
         {% endfor %}
       </div>
   </section>

@@ -58,20 +58,25 @@ def build_profile(form_data: dict) -> dict:
     return profile
 
 
-def _parse_tags(raw: str) -> list:
+def _parse_tags(raw) -> list:
     """Split comma/newline separated tags into a cleaned list."""
     if not raw:
         return []
+    if isinstance(raw, list):
+        return [str(t).strip() for t in raw if str(t).strip()]
+    
     separators = [",", "\n", ";"]
     for sep in separators:
         raw = raw.replace(sep, ",")
     return [t.strip() for t in raw.split(",") if t.strip()]
 
 
-def _parse_projects(raw: str) -> list:
+def _parse_projects(raw) -> list:
     """Parse newline-separated project descriptions into a list."""
     if not raw:
         return []
+    if isinstance(raw, list):
+        return [str(p).strip() for p in raw if str(p).strip()]
     return [p.strip() for p in raw.split("\n") if p.strip()]
 
 

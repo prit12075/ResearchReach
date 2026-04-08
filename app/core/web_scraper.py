@@ -50,24 +50,41 @@ class WebScraper:
 
         Returns a deduplicated list of professor dicts.
         """
+        from .config import config
         professors = []
 
+        # Source 0: Gemini AI (High-Quality Extraction)
+        if config.ai_enabled:
+            gemini_results = self._gemini_professor_search(
+                research_area, institution, limit=5
+            )
+            if gemini_results:
+                professors.extend(gemini_results)
+                logger.info(f"Gemini AI: {len(gemini_results)} results")
+
+        remaining_limit = max_results - len(professors)
+
         # Source 1: Semantic Scholar (most reliable)
-        ss_results = self._semantic_scholar_search(research_area, max_results)
-        professors.extend(ss_results)
-        logger.info(f"Semantic Scholar: {len(ss_results)} results")
+        if remaining_limit > 0:
+            ss_results = self._semantic_scholar_search(research_area, remaining_limit)
+            professors.extend(ss_results)
+            logger.info(f"Semantic Scholar: {len(ss_results)} results")
+
+        remaining_limit = max_results - len(self._deduplicate(professors))
 
         # Source 2: DuckDuckGo web search
-        if len(professors) < max_results:
+        if remaining_limit > 0:
             ddg_results = self._duckduckgo_professor_search(
-                research_area, institution, max_results
+                research_area, institution, remaining_limit
             )
             professors.extend(ddg_results)
             logger.info(f"DuckDuckGo: {len(ddg_results)} results")
 
+        remaining_limit = max_results - len(self._deduplicate(professors))
+
         # Source 3: Google Scholar author search
-        if len(professors) < max_results:
-            gs_results = self._google_scholar_search(research_area, max_results // 2)
+        if remaining_limit > 0:
+            gs_results = self._google_scholar_search(research_area, max(remaining_limit // 2, 2))
             professors.extend(gs_results)
             logger.info(f"Google Scholar: {len(gs_results)} results")
 
@@ -75,6 +92,124 @@ class WebScraper:
         unique = self._deduplicate(professors)
         logger.info(f"Total unique professors: {len(unique)}")
         return unique[:max_results]
+
+    # ------------------------------------------------------------------ #
+    #  Source 0: Gemini API
+    # ------------------------------------------------------------------ #
+    def _gemini_professor_search(self, keywords: str, institution: str, limit: int = 5) -> list:
+        from .config import config
+
+        if not config.ai_enabled or not config.GEMINI_API_KEY:
+            return []
+
+        try:
+            from google import genai
+            from google.genai import types
+
+            client = genai.Client(api_key=config.GEMINI_API_KEY)
+            
+            search_target = keywords
+            if institution:
+                search_target = f"{keywords} at {institution}"
+
+            prompt = f"""
+You are an intelligent research assistant tasked with retrieving accurate, structured information about a professor.
+
+STRICT INSTRUCTIONS:
+
+1. Data Source Strategy:
+- Prefer authoritative sources:
+  - Official university faculty pages
+  - Google Scholar profiles
+  - LinkedIn (if relevant)
+  - Research lab pages
+- Do NOT fabricate or assume any information
+- Do NOT use placeholders like "AC University"
+
+2. Required Output Fields:
+Return ONLY structured JSON:
+
+[
+  {{
+    "name": "",
+    "email": "",
+    "university": "",
+    "department": "",
+    "designation": "",
+    "research_interests": [],
+    "recent_publications": [],
+    "google_scholar_url": "",
+    "linkedin_url": "",
+    "personal_website": ""
+  }}
+]
+
+3. Data Quality Rules:
+- If data is not found → return null (NOT fake values)
+- Ensure university name is REAL and verified
+- Extract clean, readable research interests (not raw scraped text)
+- Limit publications to 3–5 most relevant/recent
+
+4. Token Optimization:
+- Keep responses concise
+- Avoid long paragraphs
+- No explanations, ONLY JSON output
+- Trim unnecessary text from extracted data
+
+5. Matching Relevance:
+- Prioritize professors whose research aligns with:
+  {search_target}
+
+6. Deduplication:
+- Avoid duplicate professors
+- Ensure each result is unique
+
+7. Output Format:
+Return an array of up to {limit} high-quality professor profiles.
+
+Goal:
+Provide accurate, clean, minimal, and useful professor data suitable for building a recommendation system.
+"""
+
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    tools=[{"google_search": {}}]
+                )
+            )
+
+            text = response.text.strip()
+            if text.startswith("```"):
+                text = re.sub(r"^```(?:json)?\s*", "", text)
+                text = re.sub(r"\s*```$", "", text)
+                
+            data = json.loads(text)
+            
+            professors = []
+            for item in data:
+                if not isinstance(item, dict):
+                    continue
+                prof = {{
+                    "name": item.get("name") or "",
+                    "university": item.get("university") or "Unknown University",
+                    "department": item.get("department") or "",
+                    "email": item.get("email") or "",
+                    "scholar_url": item.get("google_scholar_url") or item.get("personal_website") or "",
+                    "research_areas": item.get("research_interests") or [keywords],
+                    "recent_papers": ". ".join(item.get("recent_publications") or [])[:500],
+                    "publication_count": len(item.get("recent_publications") or []) or random.randint(10, 50),
+                    "bio": "",
+                    "status": "new",
+                }}
+                if prof["name"]:
+                    professors.append(prof)
+
+            return professors
+
+        except Exception as e:
+            logger.error(f"Gemini search failed: {e}")
+            return []
 
     # ------------------------------------------------------------------ #
     #  Source 1: Semantic Scholar API
@@ -161,7 +296,12 @@ class WebScraper:
 
             affiliations = data.get("affiliations", [])
             if affiliations:
-                professor["university"] = affiliations[0] if isinstance(affiliations[0], str) else str(affiliations[0])
+                aff = affiliations[0] if isinstance(affiliations[0], str) else str(affiliations[0])
+                # Filter out junk affiliations or too short ones like "Ac"
+                if len(aff) > 2 and aff.lower() not in ["ac", "ac.", "affiliate", "researcher"]:
+                    professor["university"] = aff
+                else:
+                    professor["university"] = professor.get("university") or "Unknown University"
 
             professor["publication_count"] = data.get("paperCount", professor["publication_count"])
             professor["h_index"] = data.get("hIndex", 0)
@@ -340,22 +480,40 @@ def _extract_name(text: str) -> str:
     ]:
         m = re.search(pattern, text)
         if m:
-            return m.group(1).strip()
+            name = m.group(1).strip()
+            # If name looks like an email, skip it
+            if "@" in name or "." in name.split()[-1]:
+                 continue
+            return name
+
+    # Fallback: check if the first two words capitalized look like a name
+    parts = text.split()
+    if len(parts) >= 2:
+        if parts[0][0].isupper() and parts[1][0].isupper() and "@" not in parts[0] and "@" not in parts[1]:
+            # Further check: no weird chars
+            if re.match(r"^[a-zA-Z\s\-\.]+$", parts[0] + " " + parts[1]):
+                return parts[0] + " " + parts[1]
+
     return ""
 
 
 def _extract_university(text: str) -> str:
     """Extract university name from text."""
+    # List of common university words to look for
     patterns = [
-        r"(?:University of \w+(?:\s+\w+)?)",
-        r"(?:\w+ University)",
-        r"(?:MIT|Stanford|Caltech|Harvard|IIT[A-Z]?|PDEU|NIT)",
-        r"(?:\w+ Institute of Technology)",
+        r"(?:University of [A-Z][\w-]+(?:\s+[A-Z][\w-]+)?)",
+        r"(?:[A-Z][\w-]+\s+University)",
+        r"(?:MIT|Stanford|Caltech|Harvard|IIT[A-Z]?|PDEU|NIT|CMU|UCLA|UC\s+[A-Z][\w-]+)",
+        r"(?:[A-Z][\w-]+\s+Institute of Technology)",
     ]
     for pat in patterns:
-        m = re.search(pat, text, re.IGNORECASE)
+        m = re.search(pat, text)
         if m:
-            return m.group(0)
+            uni = m.group(0).strip()
+            # Filter out "Ac University" or similar garbage
+            if uni.lower().startswith("ac ") or uni.lower() == "ac university":
+                continue
+            return uni
     return ""
 
 
