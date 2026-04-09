@@ -35,11 +35,178 @@ main.content-area {
 
 /* Section titles */
 .section-title {
-    font-family: 'Fraunces', serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 2rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--foreground);
     margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+}
+
+/* ── App Container & Layout ──────────────────────────────────── */
+:root {
+  --sidebar-width: 280px;
+}
+
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--background);
+  position: relative;
+}
+
+/* Grainy gradient background */
+.app-container::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 10% 20%, rgba(27, 43, 94, 0.03) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, rgba(232, 146, 58, 0.04) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.new-sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+  padding: 2rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.sidebar-logo-container {
+  width: 3rem;
+  height: 3rem;
+  background: var(--primary);
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-foreground);
+  box-shadow: 0 8px 16px rgba(27, 43, 94, 0.15);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.875rem;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+}
+
+.nav-item i {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke-width: 2px;
+}
+
+.nav-item:hover {
+  background: var(--secondary);
+  color: var(--foreground);
+  transform: translateX(4px);
+}
+
+.nav-item.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 10px 15px -3px rgba(27, 43, 94, 0.2);
+}
+
+.nav-item.active i {
+  color: #fff;
+}
+
+.upgrade-container {
+    padding: 1.25rem;
+}
+
+.pro-card {
+  padding: 1.25rem;
+  background: linear-gradient(135deg, var(--primary), #2D4A8A);
+  border-radius: 1.25rem;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 24px rgba(27, 43, 94, 0.2);
+}
+
+.pro-card::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 50%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  transform: rotate(-15deg);
+}
+
+.pro-card .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.sidebar-profile-container {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem;
+  border-radius: 1rem;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.sidebar-profile:hover {
+  background: var(--secondary);
+}
+
+.main-wrapper {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  min-height: 100vh;
+  position: relative;
+  z-index: 10;
+}
+
+.content-area {
+  padding: 2.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 /* Global utility for serif */
@@ -133,3 +300,210 @@ main.content-area {
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
 }
+
+/* ── Button loading state ─────────────────────────────────────── */
+.btn-primary.loading,
+.btn-outline.loading {
+    opacity: 0.7;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+/* ── Page transition wrapper ─────────────────────────────────── */
+.content-area {
+    animation: fadeUp 0.45s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+/* ── Match ring SVG ──────────────────────────────────────────── */
+.match-ring-fill {
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.22,1,0.36,1);
+}
+
+/* ── Professor card ──────────────────────────────────────────── */
+.match-card {
+    cursor: pointer;
+}
+
+.match-card:hover .match-name {
+    color: var(--primary);
+    transition: color 0.2s;
+}
+
+.match-card:hover .match-score-badge {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    transition: all 0.2s;
+}
+
+/* ── Prof avatar initial centered ───────────────────────────── */
+.prof-avatar-lg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    width: 4.5rem;
+    height: 4.5rem;
+}
+
+/* ── Filter pill active micro-animation ─────────────────────── */
+.filter-pill {
+    transition: all 0.2s cubic-bezier(0.22,1,0.36,1);
+}
+
+.filter-pill.active {
+    transform: translateY(-1px);
+}
+
+/* ── Badge variants for outreach page ───────────────────────── */
+.badge-success  { background: rgba(61,158,115,0.12);  color: var(--success);     border: 1px solid rgba(61,158,115,0.3);  padding: 0.3rem 0.7rem; border-radius: 62rem; font-size: 0.78rem; font-weight: 700; }
+.badge-primary  { background: rgba(27,43,94,0.1);     color: var(--primary);     border: 1px solid rgba(27,43,94,0.2);    padding: 0.3rem 0.7rem; border-radius: 62rem; font-size: 0.78rem; font-weight: 700; }
+.badge-warning  { background: rgba(232,146,58,0.12);  color: var(--accent);      border: 1px solid rgba(232,146,58,0.3);  padding: 0.3rem 0.7rem; border-radius: 62rem; font-size: 0.78rem; font-weight: 700; }
+.badge-error    { background: rgba(220,38,38,0.1);    color: #b91c1c;            border: 1px solid rgba(220,38,38,0.2);   padding: 0.3rem 0.7rem; border-radius: 62rem; font-size: 0.78rem; font-weight: 700; }
+
+/* ── Search input wrapper ────────────────────────────────────── */
+.search-input-wrap {
+    position: relative;
+}
+.search-input-wrap input {
+    padding-left: 2.25rem;
+}
+.search-input-wrap .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted-foreground);
+    pointer-events: none;
+}
+
+/* ── Staggered card load ─────────────────────────────────────── */
+.match-card:nth-child(1) { animation-delay: 0ms;   }
+.match-card:nth-child(2) { animation-delay: 50ms;  }
+.match-card:nth-child(3) { animation-delay: 100ms; }
+.match-card:nth-child(4) { animation-delay: 150ms; }
+.match-card:nth-child(5) { animation-delay: 200ms; }
+.match-card:nth-child(6) { animation-delay: 250ms; }
+.match-card:nth-child(7) { animation-delay: 300ms; }
+.match-card:nth-child(8) { animation-delay: 350ms; }
+.match-card:nth-child(9) { animation-delay: 400ms; }
+
+/* ── Smooth empty-state icon ─────────────────────────────────── */
+.empty-icon {
+    width: 5rem;
+    height: 5rem;
+    border-radius: 1.5rem;
+    background: var(--secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    color: var(--muted-foreground);
+    animation: float 5s ease-in-out infinite;
+}
+
+/* ── Sidebar active item glow ────────────────────────────────── */
+.nav-item.active {
+    box-shadow: 0 0.25rem 0.75rem rgba(232,146,58,0.2);
+}
+
+/* ── Hover on right panel buttons ───────────────────────────── */
+.right-panel button {
+    transition: background-color 0.15s, transform 0.15s;
+}
+
+.right-panel button:hover {
+    background-color: var(--secondary);
+}
+
+/* ── Upload drop zone drag state ─────────────────────────────── */
+.upload-drop.drag-over {
+    border-color: var(--accent);
+    background: rgba(232,146,58,0.06);
+    box-shadow: 0 0 0 0.25rem rgba(232,146,58,0.1);
+}
+
+/* ── Font-mono utility ───────────────────────────────────────── */
+.font-mono { font-family: 'JetBrains Mono', monospace !important; }
+
+/* ── Bg-secondary slash opacity variants (inline fallback) ───── */
+/* Used like bg-secondary/30, bg-secondary/50 — approximated */
+
+/* ── Horizontal rule ─────────────────────────────────────────── */
+hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.5rem 0;
+}
+
+/* ── Smooth image load ───────────────────────────────────────── */
+img {
+    transition: opacity 0.3s ease;
+}
+
+/* ── Tag input chip ──────────────────────────────────────────── */
+.tag-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.65rem;
+    background: rgba(27,43,94,0.08);
+    color: var(--primary);
+    border: 1px solid rgba(27,43,94,0.2);
+    border-radius: 62rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    animation: fadeIn 0.2s ease both;
+}
+
+.tag-remove {
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--muted-foreground);
+    margin-left: 0.1rem;
+}
+
+.tag-remove:hover { color: var(--destructive); }
+
+/* ── Summary item (profile step 3) ──────────────────────────── */
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+
+.summary-item:last-child { border-bottom: none; }
+
+.summary-key {
+    font-weight: 600;
+    color: var(--muted-foreground);
+    min-width: 6rem;
+}
+
+.summary-val {
+    color: var(--foreground);
+    text-align: right;
+}
+
+/* ── Page title accent ───────────────────────────────────────── */
+.page-title span {
+    color: var(--accent);
+}
+
+/* ── Badge status dot ────────────────────────────────────────── */
+.status-dot-inline {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: currentColor;
+    vertical-align: middle;
+    margin-right: 0.35rem;
+}
+

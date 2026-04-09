@@ -62,6 +62,14 @@ _sync_lock = threading.Lock()
 # ------------------------------------------------------------------ #
 #  Page Routes
 # ------------------------------------------------------------------ #
+@main_bp.route("/login", methods=["GET", "POST"])
+def login():
+    """Simulated login page."""
+    if request.method == "POST":
+        return redirect("/")
+    return render_template("login.html")
+
+
 @main_bp.route("/")
 def index():
     """Main dashboard overview."""

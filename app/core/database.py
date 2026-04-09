@@ -7,6 +7,7 @@ import sqlite3
 import json
 import logging
 from datetime import datetime, date
+from typing import Optional, List, Dict
 from .config import config
 
 logger = logging.getLogger(__name__)
@@ -29,7 +30,12 @@ class ProfessorDatabase:
                 name              TEXT NOT NULL,
                 university        TEXT,
                 department        TEXT,
+                title             TEXT,
                 email             TEXT,
+                phone             TEXT,
+                website           TEXT,
+                linkedin_url      TEXT,
+                image_url         TEXT,
                 scholar_url       TEXT,
                 research_areas    TEXT,   -- JSON array
                 recent_papers     TEXT,   -- concatenated text
@@ -90,10 +96,19 @@ class ProfessorDatabase:
     def _migrate(self):
         """Apply schema migrations safely for existing databases."""
         cols = [r[1] for r in self.conn.execute("PRAGMA table_info(professors)").fetchall()]
-        if "h_index" not in cols:
-            self.conn.execute("ALTER TABLE professors ADD COLUMN h_index INTEGER DEFAULT 0")
-            self.conn.commit()
-            logger.info("Migration: added h_index column")
+        migrations = [
+            ("h_index",     "ALTER TABLE professors ADD COLUMN h_index INTEGER DEFAULT 0"),
+            ("title",       "ALTER TABLE professors ADD COLUMN title TEXT"),
+            ("phone",       "ALTER TABLE professors ADD COLUMN phone TEXT"),
+            ("website",     "ALTER TABLE professors ADD COLUMN website TEXT"),
+            ("linkedin_url","ALTER TABLE professors ADD COLUMN linkedin_url TEXT"),
+            ("image_url",   "ALTER TABLE professors ADD COLUMN image_url TEXT"),
+        ]
+        for col, sql in migrations:
+            if col not in cols:
+                self.conn.execute(sql)
+                self.conn.commit()
+                logger.info(f"Migration: added {col} column")
 
     # ------------------------------------------------------------------ #
     #  Professors
@@ -113,14 +128,18 @@ class ProfessorDatabase:
             pid = row["id"]
             cursor.execute('''
                 UPDATE professors SET
-                    department=?, email=?, scholar_url=?, research_areas=?,
-                    recent_papers=?, publication_count=?, h_index=?, bio=?,
-                    match_score=?, match_grade=?, matched_topics=?,
+                    department=?, title=?, email=?, phone=?, website=?, linkedin_url=?,
+                    scholar_url=?, research_areas=?, recent_papers=?, publication_count=?,
+                    h_index=?, bio=?, match_score=?, match_grade=?, matched_topics=?,
                     status=?, updated_at=?
                 WHERE id=?
             ''', (
                 data.get("department", ""),
+                data.get("title", ""),
                 data.get("email", ""),
+                data.get("phone", ""),
+                data.get("website", ""),
+                data.get("linkedin_url", ""),
                 data.get("scholar_url", ""),
                 json.dumps(data.get("research_areas", [])),
                 data.get("recent_papers", ""),
@@ -137,15 +156,19 @@ class ProfessorDatabase:
         else:
             cursor.execute('''
                 INSERT INTO professors
-                (name, university, department, email, scholar_url, research_areas,
-                 recent_papers, publication_count, h_index, bio, match_score, match_grade,
-                 matched_topics, status, updated_at)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                (name, university, department, title, email, phone, website, linkedin_url,
+                 scholar_url, research_areas, recent_papers, publication_count, h_index,
+                 bio, match_score, match_grade, matched_topics, status, updated_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ''', (
                 data.get("name", ""),
                 data.get("university", ""),
                 data.get("department", ""),
+                data.get("title", ""),
                 data.get("email", ""),
+                data.get("phone", ""),
+                data.get("website", ""),
+                data.get("linkedin_url", ""),
                 data.get("scholar_url", ""),
                 json.dumps(data.get("research_areas", [])),
                 data.get("recent_papers", ""),
@@ -170,7 +193,7 @@ class ProfessorDatabase:
         )
         return [self._row_to_prof(r) for r in cursor.fetchall()]
 
-    def get_professor_by_id(self, pid: int) -> dict | None:
+    def get_professor_by_id(self, pid: int) -> Optional[dict]:
         cursor = self.conn.cursor()
         cursor.execute("SELECT * FROM professors WHERE id=?", (pid,))
         row = cursor.fetchone()
@@ -198,7 +221,7 @@ class ProfessorDatabase:
         self.conn.commit()
         return cursor.lastrowid
 
-    def get_latest_profile(self) -> dict | None:
+    def get_latest_profile(self) -> Optional[dict]:
         cursor = self.conn.cursor()
         cursor.execute(
             "SELECT profile_json FROM student_profile ORDER BY id DESC LIMIT 1"

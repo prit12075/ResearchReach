@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initSearch();
   initDashboard();
   populateSavedTags();
+  initScrollReveal();
+  initDropZone();
 });
 
 // ══════════════════════════════════════════════════════════════
@@ -555,19 +557,20 @@ async function refreshStats() {
     const resp = await fetch('/api/stats');
     const stats = await resp.json();
 
-    const mapping = {
-      'stat-professors': stats.total_professors,
+    // Update individual stat elements by their ID (set directly in index.html)
+    const directIds = {
+      'stat-matched':    stats.total_professors,
       'stat-sent':       stats.emails_sent,
-      'stat-replies':    stats.emails_replied,
-      'stat-followups':  stats.follow_ups_pending,
+      'stat-replies':    stats.reply_rate,
+      'stat-interviews': stats.interviews,
     };
 
-    Object.entries(mapping).forEach(([id, val]) => {
-      const el = document.querySelector(`#${id} .stat-value`);
-      if (el && el.textContent !== String(val)) {
-        el.textContent = val;
-        el.closest('.stat-card')?.classList.add('flash');
-        setTimeout(() => el.closest('.stat-card')?.classList.remove('flash'), 600);
+    Object.entries(directIds).forEach(([id, newVal]) => {
+      const el = document.getElementById(id);
+      if (el && el.textContent !== String(newVal ?? '')) {
+        el.textContent = newVal ?? 0;
+        el.classList.add('flash');
+        setTimeout(() => el.classList.remove('flash'), 600);
       }
     });
   } catch (e) { /* silent */ }
@@ -634,12 +637,22 @@ function showToast(type, message, duration = 4000) {
 
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
-  toast.innerHTML = `<span>${icons[type] || ''}</span><span>${escHtml(message)}</span>`;
+  toast.style.pointerEvents = 'all';
+  toast.innerHTML = `<span style="flex-shrink:0;">${icons[type] || ''}</span><span>${escHtml(message)}</span>`;
+
+  // Click to dismiss
+  toast.addEventListener('click', () => {
+    toast.classList.add('hiding');
+    setTimeout(() => toast.remove(), 280);
+  });
+
   container.appendChild(toast);
 
   setTimeout(() => {
-    toast.classList.add('hiding');
-    setTimeout(() => toast.remove(), 320);
+    if (toast.parentNode) {
+      toast.classList.add('hiding');
+      setTimeout(() => toast.remove(), 280);
+    }
   }, duration);
 }
 
@@ -909,6 +922,79 @@ async function saveProfEmail(profId) {
   } catch (err) {
     showToast('error', `Error: ${err.message}`);
   }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SCROLL REVEAL (IntersectionObserver)
+// ══════════════════════════════════════════════════════════════
+function initScrollReveal() {
+  if (!('IntersectionObserver' in window)) return;
+
+  // Add .reveal class to eligible elements that aren't already animated
+  const targets = document.querySelectorAll(
+    '.stat-card, .section-card, .recent-card, .top-match-card, ' +
+    '.experience-card, .stat-compact, .followup-row, .timeline-item'
+  );
+
+  targets.forEach((el, i) => {
+    // Skip elements that already have a fade-up animation so we don't double-animate
+    if (el.classList.contains('animate-fade-up') ||
+        el.classList.contains('animate-fade-up-1') ||
+        el.classList.contains('animate-fade-up-2') ||
+        el.classList.contains('animate-fade-up-3') ||
+        el.classList.contains('animate-fade-up-4')) return;
+
+    el.classList.add('reveal');
+    const delayClass = `reveal-delay-${(i % 4) + 1}`;
+    el.classList.add(delayClass);
+  });
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target); // animate once
+        }
+      });
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+  );
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DRAG-AND-DROP UPLOAD ZONE
+// ══════════════════════════════════════════════════════════════
+function initDropZone() {
+  const zone = document.getElementById('drop-zone');
+  if (!zone) return;
+
+  zone.addEventListener('dragover', e => {
+    e.preventDefault();
+    zone.classList.add('drag-over');
+  });
+
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer?.files?.[0];
+    if (file) {
+      const input = document.getElementById('resume-upload');
+      if (input) {
+        // Manually trigger the upload with the dropped file
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        // Call the handler defined in resume.html's block scripts
+        if (typeof handleFileSelect === 'function') handleFileSelect(input);
+        else if (typeof uploadResume === 'function') uploadResume(input);
+      }
+    }
+  });
 }
 
 // ══════════════════════════════════════════════════════════════

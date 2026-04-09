@@ -9,28 +9,28 @@
     <div class="blob-lavender"></div>
     <div class="glow-spot"></div>
 
-    <!-- Hero Section -->
-    <section class="hero-card dot-pattern animate-fade-up">
-      <div class="hero-content">
-        <div class="hero-text">
-          <div class="hero-chip">
-            <span class="status-dot animate-pulse" style="background: var(--success);"></span>
-            Match engine ready
+    <!-- Enhanced Hero Section -->
+    <section class="hero-card glass animate-fade-up" style="background:linear-gradient(135deg, rgba(27, 43, 94, 0.05) 0%, rgba(232, 146, 58, 0.05) 100%);border-radius:2rem;padding:3.5rem 3rem;margin-bottom:2.5rem;border:1px solid var(--border);position:relative;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.03);">
+      <div class="hero-content" style="position:relative;z-index:10;display:flex;align-items:center;gap:4rem;">
+        <div class="hero-text" style="flex:1;">
+          <div class="hero-chip glass" style="display:inline-flex;align-items:center;gap:0.6rem;padding:0.5rem 1rem;border-radius:62rem;background:white;font-size:0.85rem;font-weight:700;color:var(--primary);margin-bottom:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.04);">
+            <span class="status-dot animate-pulse" style="width:0.6rem;height:0.6rem;border-radius:50%;background:var(--success);"></span>
+            Match Engine Optimized
           </div>
-          <h1 class="hero-title">
-            Find Your Perfect Research Mentor, <span style="color: var(--primary);">Instantly.</span>
+          <h1 class="hero-title" style="font-family:'Outfit',sans-serif;font-size:3.5rem;line-height:1;font-weight:800;letter-spacing:-0.03em;margin:0 0 1.25rem 0;color:var(--foreground);">
+            Find Your <span style="color:var(--accent);">Perfect</span> Research Mentor.
           </h1>
-          <p class="hero-lead">
-            AI-matched professors based on your resume & interests. Good evening, <span class="name-accent">{{ profile.get('name', 'Researcher') }}</span>!
+          <p class="hero-lead" style="font-size:1.15rem;color:var(--muted-foreground);margin-bottom:2.5rem;max-width:32rem;">
+            Good evening, <span style="color:var(--primary);font-weight:700;">{{ profile.get('name', 'Researcher') }}</span>. Our AI has analyzed your profile and identified new high-potential matches.
           </p>
-          <div class="hero-actions">
-            <a href="/profile" class="btn-primary" style="background: #1B2B5E;">
-              <i data-lucide="upload" style="width:1.2rem; height:1.2rem;"></i>
+          <div class="hero-actions" style="display:flex;gap:1rem;">
+            <a href="/profile" class="btn-primary" style="height:3.5rem;padding:0 2rem;display:inline-flex;align-items:center;gap:0.85rem;box-shadow:0 12px 24px rgba(27,43,94,0.2);">
+              <i data-lucide="upload-cloud" style="width:1.25rem;height:1.25rem;"></i>
               Upload Resume
             </a>
-            <a href="/results" class="btn-outline">
+            <a href="/results" class="btn-outline glass" style="height:3.5rem;padding:0 2rem;display:inline-flex;align-items:center;gap:0.85rem;">
               View Matches
-              <i data-lucide="arrow-right" style="width:1.2rem; height:1.2rem;"></i>
+              <i data-lucide="arrow-right" style="width:1.25rem;height:1.25rem;"></i>
             </a>
           </div>
         </div>
@@ -54,52 +54,52 @@
       </div>
     </section>
 
-    <!-- Stats Grid -->
-    <section class="stat-grid">
-      <article class="stat-card stat-accent-amber animate-fade-up-1">
-        <div class="stat-card-inner">
+    <!-- Glass Stats Grid -->
+    <section class="stat-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:1.5rem;margin-bottom:3rem;">
+      <article class="stat-card glass animate-fade-up-1" style="background:white;padding:1.5rem;border-radius:1.5rem;border:1px solid var(--border);box-shadow:0 10px 30px rgba(0,0,0,0.02);">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
           <div>
-            <p class="stat-label">Professors Matched</p>
-            <p class="stat-value" id="stat-matched">{{ stats.get('total_professors', 0) }}</p>
+            <p style="margin:0;font-size:0.8rem;font-weight:700;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:0.05em;">Matched</p>
+            <p style="margin:0.25rem 0 0;font-family:'Outfit',sans-serif;font-size:2rem;font-weight:800;color:var(--foreground);" id="stat-matched">{{ stats.get('total_professors', 0) }}</p>
           </div>
-          <div class="stat-icon">
-            <i data-lucide="users" style="width:1.2rem; height:1.2rem;"></i>
+          <div style="width:3rem;height:3rem;border-radius:1rem;background:rgba(232,146,58,0.1);color:var(--accent);display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="users" style="width:1.5rem;height:1.5rem;"></i>
           </div>
         </div>
       </article>
       
-      <article class="stat-card stat-accent-navy animate-fade-up-2">
-        <div class="stat-card-inner">
+      <article class="stat-card glass animate-fade-up-2" style="background:white;padding:1.5rem;border-radius:1.5rem;border:1px solid var(--border);box-shadow:0 10px 30px rgba(0,0,0,0.02);">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
           <div>
-            <p class="stat-label">Emails Sent</p>
-            <p class="stat-value" id="stat-sent">{{ stats.get('emails_sent', 0) }}</p>
+            <p style="margin:0;font-size:0.8rem;font-weight:700;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:0.05em;">Sent</p>
+            <p style="margin:0.25rem 0 0;font-family:'Outfit',sans-serif;font-size:2rem;font-weight:800;color:var(--foreground);" id="stat-sent">{{ stats.get('emails_sent', 0) }}</p>
           </div>
-          <div class="stat-icon">
-            <i data-lucide="mail" style="width:1.2rem; height:1.2rem;"></i>
+          <div style="width:3rem;height:3rem;border-radius:1rem;background:rgba(27,43,94,0.1);color:var(--primary);display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="mail" style="width:1.5rem;height:1.5rem;"></i>
           </div>
         </div>
       </article>
 
-      <article class="stat-card stat-accent-emerald animate-fade-up-3">
-        <div class="stat-card-inner">
+      <article class="stat-card glass animate-fade-up-3" style="background:white;padding:1.5rem;border-radius:1.5rem;border:1px solid var(--border);box-shadow:0 10px 30px rgba(0,0,0,0.02);">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
           <div>
-            <p class="stat-label">Reply Rate</p>
-            <p class="stat-value" id="stat-replies">{{ stats.get('reply_rate', '0%') }}</p>
+            <p style="margin:0;font-size:0.8rem;font-weight:700;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:0.05em;">Reply Rate</p>
+            <p style="margin:0.25rem 0 0;font-family:'Outfit',sans-serif;font-size:2rem;font-weight:800;color:var(--foreground);" id="stat-replies">{{ stats.get('reply_rate', '0%') }}</p>
           </div>
-          <div class="stat-icon">
-            <i data-lucide="trending-up" style="width:1.2rem; height:1.2rem;"></i>
+          <div style="width:3rem;height:3rem;border-radius:1rem;background:rgba(16,185,129,0.1);color:var(--success);display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="trending-up" style="width:1.5rem;height:1.5rem;"></i>
           </div>
         </div>
       </article>
 
-      <article class="stat-card stat-accent-rose animate-fade-up-4">
-        <div class="stat-card-inner">
+      <article class="stat-card glass animate-fade-up-4" style="background:white;padding:1.5rem;border-radius:1.5rem;border:1px solid var(--border);box-shadow:0 10px 30px rgba(0,0,0,0.02);">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
           <div>
-            <p class="stat-label">Interviews Booked</p>
-            <p class="stat-value" id="stat-interviews">{{ stats.get('interviews', 0) }}</p>
+            <p style="margin:0;font-size:0.8rem;font-weight:700;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:0.05em;">interviews</p>
+            <p style="margin:0.25rem 0 0;font-family:'Outfit',sans-serif;font-size:2rem;font-weight:800;color:var(--foreground);" id="stat-interviews">{{ stats.get('interviews', 0) }}</p>
           </div>
-          <div class="stat-icon">
-            <i data-lucide="calendar" style="width:1.2rem; height:1.2rem;"></i>
+          <div style="width:3rem;height:3rem;border-radius:1rem;background:rgba(239,68,68,0.1);color:var(--destructive);display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="calendar" style="width:1.5rem;height:1.5rem;"></i>
           </div>
         </div>
       </article>
@@ -201,6 +201,9 @@
 {% endblock %}
 
 {% block scripts %}
+<script id="dashboard-stats" type="application/json">
+  {{ stats | default({}) | tojson | safe }}
+</script>
 <script>
   // Simple count-up animation for stats
   function animateValue(id, start, end, duration) {
@@ -221,10 +224,11 @@
 
   window.addEventListener('load', () => {
     // These values would normally come from the backend context
-    const stats = {{ stats | tojson | safe }};
-    const matched = parseInt(stats.total_professors || 0);
-    const sent = parseInt(stats.emails_sent || 0);
-    const replies = parseInt((stats.reply_rate || "0%").replace('%', ''));
+    const statsData = document.getElementById('dashboard-stats');
+    const dashboardStats = statsData ? JSON.parse(statsData.textContent) : {};
+    const matched = parseInt(dashboardStats.total_professors || 0);
+    const sent = parseInt(dashboardStats.emails_sent || 0);
+    const replies = parseInt((dashboardStats.reply_rate || "0%").toString().replace('%', ''));
     
     animateValue("stat-matched", 0, matched, 1500);
     animateValue("stat-sent", 0, sent, 1500);

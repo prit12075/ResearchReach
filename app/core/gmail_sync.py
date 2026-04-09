@@ -334,23 +334,42 @@ class GmailSync:
         return " ".join(w.capitalize() for w in local.split() if w)
 
     def _get_body(self, msg) -> str:
-        """Extract plain text body from email."""
+        """Extract plain text body from email (or stripped html)."""
         body_parts = []
+        html_parts = []
         if msg.is_multipart():
             for part in msg.walk():
-                if part.get_content_type() == "text/plain":
+                ctype = part.get_content_type()
+                if ctype == "text/plain":
                     try:
                         charset = part.get_content_charset() or "utf-8"
                         body_parts.append(part.get_payload(decode=True).decode(charset, errors="replace"))
                     except Exception:
                         pass
+                elif ctype == "text/html":
+                    try:
+                        charset = part.get_content_charset() or "utf-8"
+                        html = part.get_payload(decode=True).decode(charset, errors="replace")
+                        text_only = re.sub(r'<style[^>]*>[\s\S]*?</style>|<script[^>]*>[\s\S]*?</script>', '', html, flags=re.IGNORECASE)
+                        text_only = re.sub(r'<[^>]+>', ' ', text_only)
+                        text_only = re.sub(r'\s+', ' ', text_only).strip()
+                        html_parts.append(text_only)
+                    except Exception:
+                        pass
         else:
             try:
                 charset = msg.get_content_charset() or "utf-8"
-                body_parts.append(msg.get_payload(decode=True).decode(charset, errors="replace"))
+                content = msg.get_payload(decode=True).decode(charset, errors="replace")
+                if msg.get_content_type() == "text/html":
+                    text_only = re.sub(r'<style[^>]*>[\s\S]*?</style>|<script[^>]*>[\s\S]*?</script>', '', content, flags=re.IGNORECASE)
+                    text_only = re.sub(r'<[^>]+>', ' ', text_only)
+                    content = re.sub(r'\s+', ' ', text_only).strip()
+                body_parts.append(content)
             except Exception:
                 pass
-        return "\n".join(body_parts)[:3000]
+        
+        final_body = "\n".join(body_parts) if body_parts else "\n".join(html_parts)
+        return final_body[:3000]
 
     def _parse_date(self, date_str: str):
         if not date_str:

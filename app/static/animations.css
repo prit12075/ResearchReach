@@ -1,7 +1,10 @@
-/* v0 Animation Library for ProfMatch AI */
+/* ═══════════════════════════════════════════════════════════════
+   ResearchReach — Animation Library
+   ═══════════════════════════════════════════════════════════════ */
 
+/* ── Shimmer (loading skeleton & button effect) ──────────────── */
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
+  0%   { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 
@@ -14,70 +17,153 @@
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.3) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);
   background-size: 200% 100%;
-  animation: shimmer 2.5s infinite;
+  animation: shimmer 2s infinite;
 }
 
+/* ── Skeleton loading ────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, var(--secondary) 25%, var(--muted) 50%, var(--secondary) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+/* ── Fade Up ─────────────────────────────────────────────────── */
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(1.25rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(1.25rem); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.animate-fade-up {
-  animation: fadeUp 0.5s ease-out forwards;
+.animate-fade-up { animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both; }
+
+/* Staggered variants — these include the full animation + delay */
+.animate-fade-up-1 { animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both 0ms;   }
+.animate-fade-up-2 { animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both 90ms;  }
+.animate-fade-up-3 { animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both 180ms; }
+.animate-fade-up-4 { animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both 270ms; }
+.animate-fade-up-5 { animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both 360ms; }
+.animate-fade-up-6 { animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both 450ms; }
+
+/* ── Fade In ─────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
+.animate-fade-in { animation: fadeIn 0.4s ease both; }
 
-.animate-fade-up-1 { animation-delay: 0ms; }
-.animate-fade-up-2 { animation-delay: 80ms; }
-.animate-fade-up-3 { animation-delay: 160ms; }
-.animate-fade-up-4 { animation-delay: 240ms; }
-.animate-fade-up-5 { animation-delay: 320ms; }
-.animate-fade-up-6 { animation-delay: 400ms; }
+/* ── Slide In Right (panel) ──────────────────────────────────── */
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0.6; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.animate-slide-in-right { animation: slideInRight 0.3s cubic-bezier(0.22,1,0.36,1) forwards; }
 
+/* ── Scale In (modal) ────────────────────────────────────────── */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94) translateY(0.5rem); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-scale-in { animation: scaleIn 0.25s cubic-bezier(0.34,1.2,0.64,1) both; }
+
+/* ── Float (hero avatars) ────────────────────────────────────── */
 @keyframes float {
   0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-0.625rem) rotate(2deg); }
+  50%       { transform: translateY(-0.625rem) rotate(2deg); }
 }
+.animate-float           { animation: float 5s ease-in-out infinite; }
+.animate-float-delayed   { animation: float 5s ease-in-out infinite 1s; }
+.animate-float-delayed-2 { animation: float 5s ease-in-out infinite 2s; }
 
-.animate-float { animation: float 4s ease-in-out infinite; }
-.animate-float-delayed { animation: float 4s ease-in-out infinite 1s; }
-.animate-float-delayed-2 { animation: float 4s ease-in-out infinite 2s; }
+/* ── Pulse ───────────────────────────────────────────────────── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+.animate-pulse { animation: pulse 1.8s ease-in-out infinite; }
 
+/* ── Status dot pulse ────────────────────────────────────────── */
+@keyframes statusPing {
+  0%    { transform: scale(1);    opacity: 1; }
+  75%   { transform: scale(1.8);  opacity: 0; }
+  100%  { transform: scale(1.8);  opacity: 0; }
+}
+.status-dot { display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 9999px; }
+.status-dot.animate-pulse { animation: statusPing 1.5s ease infinite; }
+
+/* ── Arc draw (match ring) ───────────────────────────────────── */
 @keyframes drawArc {
   from { stroke-dashoffset: 251.2; }
 }
+.animate-draw-arc { animation: drawArc 1.5s ease-out forwards; }
 
-.animate-draw-arc {
-  animation: drawArc 1.5s ease-out forwards;
+/* ── Orbit (search icon) ─────────────────────────────────────── */
+@keyframes orbit {
+  0%   { transform: rotate(0deg) translateX(0.625rem) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(0.625rem) rotate(-360deg); }
 }
+.animate-orbit { animation: orbit 4s linear infinite; }
 
+/* ── AI dots (generating email) ──────────────────────────────── */
 @keyframes aiDot {
-  0%, 100% { opacity: 0.3; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1); }
+  0%, 100% { opacity: 0.25; transform: scale(0.75); }
+  50%       { opacity: 1;    transform: scale(1.1);  }
+}
+.ai-dot-1 { animation: aiDot 1.2s ease-in-out infinite 0ms; }
+.ai-dot-2 { animation: aiDot 1.2s ease-in-out infinite 0.2s; }
+.ai-dot-3 { animation: aiDot 1.2s ease-in-out infinite 0.4s; }
+
+/* ── Scroll reveal (added via JS IntersectionObserver) ───────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(1.5rem);
+  transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 60ms;  }
+.reveal-delay-2 { transition-delay: 120ms; }
+.reveal-delay-3 { transition-delay: 180ms; }
+.reveal-delay-4 { transition-delay: 240ms; }
+
+/* ── Count-up number flash ───────────────────────────────────── */
+@keyframes numFlash {
+  0%   { color: var(--accent); }
+  100% { color: var(--foreground); }
+}
+.flash { animation: numFlash 0.5s ease forwards; }
+
+/* ── Card hover lift ─────────────────────────────────────────── */
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.22,1,0.36,1), box-shadow 0.25s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-0.25rem);
+  box-shadow: 0 1rem 2.5rem rgba(0,0,0,0.1);
 }
 
-.ai-dot-1 { animation: aiDot 1.4s ease-in-out infinite; }
-.ai-dot-2 { animation: aiDot 1.4s ease-in-out infinite 0.2s; }
-.ai-dot-3 { animation: aiDot 1.4s ease-in-out infinite 0.4s; }
-
-/* Slide Up for detail panel */
-@keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+/* ── Progress bar animation ──────────────────────────────────── */
+@keyframes progressPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
 }
+.progress-bar-animated { animation: progressPulse 1.4s ease infinite; }
 
-.animate-slide-in-right {
-  animation: slideInRight 0.3s ease-out forwards;
+/* ── Bounce in ───────────────────────────────────────────────── */
+@keyframes bounceIn {
+  0%   { opacity: 0; transform: scale(0.3); }
+  50%  { opacity: 1; transform: scale(1.05); }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
 }
+.animate-bounce-in { animation: bounceIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+/* ── Spin ────────────────────────────────────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.animate-spin { animation: spin 1s linear infinite; }

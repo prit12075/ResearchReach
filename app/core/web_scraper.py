@@ -14,6 +14,7 @@ import random
 import logging
 import json
 from urllib.parse import quote, urljoin
+from typing import Optional, List, Dict
 
 import requests
 from bs4 import BeautifulSoup
@@ -43,7 +44,7 @@ class WebScraper:
         self,
         research_area: str,
         institution: str = "",
-        max_results: int = 15,
+        max_results: int = 40,
     ) -> list:
         """
         Aggregate professor data from multiple sources.
@@ -53,20 +54,29 @@ class WebScraper:
         from .config import config
         professors = []
 
-        # Source 0: Gemini AI (High-Quality Extraction)
+        # Source 0: Gemini AI — run multiple focused queries per keyword
         if config.ai_enabled:
-            gemini_results = self._gemini_professor_search(
-                research_area, institution, limit=5
-            )
-            if gemini_results:
-                professors.extend(gemini_results)
-                logger.info(f"Gemini AI: {len(gemini_results)} results")
+            keywords = [kw.strip() for kw in research_area.split() if len(kw.strip()) > 3]
+            # Build 2-3 distinct search phrases to maximise coverage
+            queries = [research_area]
+            if len(keywords) >= 2:
+                queries.append(" ".join(keywords[:2]))
+            if len(keywords) >= 3:
+                queries.append(keywords[-1])  # last standalone keyword
+            queries = list(dict.fromkeys(queries))  # deduplicate while preserving order
 
-        remaining_limit = max_results - len(professors)
+            for q in queries[:3]:
+                gemini_results = self._gemini_professor_search(q, institution, limit=15)
+                if gemini_results:
+                    professors.extend(gemini_results)
+                    logger.info(f"Gemini AI ({q!r}): {len(gemini_results)} results")
+                time.sleep(0.5)  # small pause between Gemini calls
+
+        remaining_limit = max_results - len(self._deduplicate(professors))
 
         # Source 1: Semantic Scholar (most reliable)
         if remaining_limit > 0:
-            ss_results = self._semantic_scholar_search(research_area, remaining_limit)
+            ss_results = self._semantic_scholar_search(research_area, min(remaining_limit, 20))
             professors.extend(ss_results)
             logger.info(f"Semantic Scholar: {len(ss_results)} results")
 
@@ -75,7 +85,7 @@ class WebScraper:
         # Source 2: DuckDuckGo web search
         if remaining_limit > 0:
             ddg_results = self._duckduckgo_professor_search(
-                research_area, institution, remaining_limit
+                research_area, institution, min(remaining_limit, 15)
             )
             professors.extend(ddg_results)
             logger.info(f"DuckDuckGo: {len(ddg_results)} results")
@@ -96,7 +106,7 @@ class WebScraper:
     # ------------------------------------------------------------------ #
     #  Source 0: Gemini API
     # ------------------------------------------------------------------ #
-    def _gemini_professor_search(self, keywords: str, institution: str, limit: int = 5) -> list:
+    def _gemini_professor_search(self, keywords: str, institution: str, limit: int = 15) -> list:
         from .config import config
 
         if not config.ai_enabled or not config.GEMINI_API_KEY:
@@ -107,69 +117,49 @@ class WebScraper:
             from google.genai import types
 
             client = genai.Client(api_key=config.GEMINI_API_KEY)
-            
+
             search_target = keywords
             if institution:
                 search_target = f"{keywords} at {institution}"
 
-            prompt = f"""
-You are an intelligent research assistant tasked with retrieving accurate, structured information about a professor.
+            prompt = f"""Search for real professors who research "{search_target}".
 
-STRICT INSTRUCTIONS:
+Use Google Search to find REAL professors from universities worldwide. Look at:
+- University faculty pages (cs.mit.edu, ee.stanford.edu, etc.)
+- Google Scholar profiles (scholar.google.com)
+- Lab/research group pages
+- LinkedIn profiles of academics
 
-1. Data Source Strategy:
-- Prefer authoritative sources:
-  - Official university faculty pages
-  - Google Scholar profiles
-  - LinkedIn (if relevant)
-  - Research lab pages
-- Do NOT fabricate or assume any information
-- Do NOT use placeholders like "AC University"
+Return ONLY a valid JSON array. No markdown, no explanation, ONLY the raw JSON array.
 
-2. Required Output Fields:
-Return ONLY structured JSON:
+For each professor, extract as much real contact/profile info as possible:
 
 [
   {{
-    "name": "",
-    "email": "",
-    "university": "",
-    "department": "",
-    "designation": "",
-    "research_interests": [],
-    "recent_publications": [],
-    "google_scholar_url": "",
-    "linkedin_url": "",
-    "personal_website": ""
+    "name": "Full Name (REAL person only)",
+    "title": "e.g. Associate Professor, Full Professor, Assistant Professor",
+    "university": "Full official university name (e.g. Massachusetts Institute of Technology)",
+    "department": "e.g. Department of Computer Science",
+    "email": "official university email if publicly listed, else null",
+    "phone": "office phone if publicly listed, else null",
+    "website": "personal faculty page URL or lab page URL",
+    "linkedin_url": "LinkedIn profile URL if found, else null",
+    "google_scholar_url": "https://scholar.google.com/citations?user=... if found",
+    "research_interests": ["interest1", "interest2", "interest3"],
+    "recent_publications": ["Paper title 1 (Year)", "Paper title 2 (Year)"],
+    "bio": "1-2 sentence summary of their research focus"
   }}
 ]
 
-3. Data Quality Rules:
-- If data is not found → return null (NOT fake values)
-- Ensure university name is REAL and verified
-- Extract clean, readable research interests (not raw scraped text)
-- Limit publications to 3–5 most relevant/recent
-
-4. Token Optimization:
-- Keep responses concise
-- Avoid long paragraphs
-- No explanations, ONLY JSON output
-- Trim unnecessary text from extracted data
-
-5. Matching Relevance:
-- Prioritize professors whose research aligns with:
-  {search_target}
-
-6. Deduplication:
-- Avoid duplicate professors
-- Ensure each result is unique
-
-7. Output Format:
-Return an array of up to {limit} high-quality professor profiles.
-
-Goal:
-Provide accurate, clean, minimal, and useful professor data suitable for building a recommendation system.
-"""
+STRICT RULES:
+- Return {limit} unique professors
+- ONLY real verified people — never invent names or universities
+- University name must be the full official name (NOT abbreviations like "MIT" → use "Massachusetts Institute of Technology", but short names like "Stanford University" are fine)
+- If a field is not publicly available, use null — never guess or fabricate
+- Email must be a real .edu or institutional address if found
+- Prioritize professors with strong alignment to: {search_target}
+- No duplicate professors
+- Output ONLY the JSON array, nothing else"""
 
             response = client.models.generate_content(
                 model="gemini-2.0-flash",
@@ -180,33 +170,54 @@ Provide accurate, clean, minimal, and useful professor data suitable for buildin
             )
 
             text = response.text.strip()
-            if text.startswith("```"):
-                text = re.sub(r"^```(?:json)?\s*", "", text)
-                text = re.sub(r"\s*```$", "", text)
-                
+            # Strip markdown fences if present
+            text = re.sub(r"^```(?:json)?\s*", "", text)
+            text = re.sub(r"\s*```$", "", text)
+            # Extract JSON array from response
+            match = re.search(r"\[.*\]", text, re.DOTALL)
+            if match:
+                text = match.group(0)
+
             data = json.loads(text)
-            
+
             professors = []
             for item in data:
                 if not isinstance(item, dict):
                     continue
-                prof = {{
-                    "name": item.get("name") or "",
-                    "university": item.get("university") or "Unknown University",
+                name = (item.get("name") or "").strip()
+                university = (item.get("university") or "").strip()
+                # Skip garbage entries
+                if not name or len(name.split()) < 2:
+                    continue
+                if university.lower() in ("unknown university", "ac university", "ac", ""):
+                    university = "Unknown University"
+
+                prof = {
+                    "name": name,
+                    "title": item.get("title") or "",
+                    "university": university,
                     "department": item.get("department") or "",
                     "email": item.get("email") or "",
-                    "scholar_url": item.get("google_scholar_url") or item.get("personal_website") or "",
+                    "phone": item.get("phone") or "",
+                    "website": item.get("website") or "",
+                    "linkedin_url": item.get("linkedin_url") or "",
+                    "scholar_url": item.get("google_scholar_url") or item.get("website") or "",
                     "research_areas": item.get("research_interests") or [keywords],
-                    "recent_papers": ". ".join(item.get("recent_publications") or [])[:500],
-                    "publication_count": len(item.get("recent_publications") or []) or random.randint(10, 50),
-                    "bio": "",
+                    "recent_papers": ". ".join(
+                        p for p in (item.get("recent_publications") or []) if p
+                    )[:600],
+                    "publication_count": len(item.get("recent_publications") or []),
+                    "bio": item.get("bio") or "",
                     "status": "new",
-                }}
-                if prof["name"]:
-                    professors.append(prof)
+                }
+                professors.append(prof)
 
+            logger.info(f"Gemini returned {len(professors)} professors for '{keywords}'")
             return professors
 
+        except json.JSONDecodeError as e:
+            logger.error(f"Gemini JSON parse error: {e}")
+            return []
         except Exception as e:
             logger.error(f"Gemini search failed: {e}")
             return []
@@ -372,7 +383,7 @@ Provide accurate, clean, minimal, and useful professor data suitable for buildin
 
     def _parse_faculty_result(
         self, title: str, snippet: str, url: str, research_area: str
-    ) -> dict | None:
+    ) -> Optional[dict]:
         """Extract professor struct from a search result snippet."""
         name = _extract_name(title)
         if not name or len(name.split()) < 2:

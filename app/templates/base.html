@@ -8,256 +8,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='design_system.css') }}?v=1.1" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='animations.css') }}?v=1.1" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=1.1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='design_system.css') }}?v=3.0" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='animations.css') }}?v=3.0" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=3.0" />
   <script src="https://unpkg.com/lucide@latest"></script>
   {% block head %}{% endblock %}
-  <style>
-    /* Layout specific styles for the new sidebar */
-    :root {
-      --sidebar-width: 260px;
-    }
-    
-    body {
-        overflow-x: hidden;
-    }
-
-    .app-container {
-      display: flex;
-      min-height: 100vh;
-      background-color: var(--background);
-    }
-
-    .new-sidebar {
-      width: var(--sidebar-width);
-      height: 100vh;
-      position: fixed;
-      left: 0;
-      top: 0;
-      background: var(--card);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      z-index: 40;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    }
-
-    .sidebar-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .sidebar-logo-container {
-      width: 2.75rem;
-      height: 2.75rem;
-      background: var(--primary);
-      border-radius: 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--primary-foreground);
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    }
-
-    .sidebar-logo-wrapper {
-        position: relative;
-    }
-
-    .sidebar-logo-sparkle {
-        position: absolute;
-        top: -0.25rem;
-        right: -0.25rem;
-        width: 1rem;
-        height: 1rem;
-        border-radius: 50%;
-        background: var(--accent);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--accent-foreground);
-    }
-
-    .sidebar-nav {
-      flex: 1;
-      padding: 1rem 0.75rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.625rem 0.75rem;
-      border-radius: 0.75rem;
-      color: var(--muted-foreground);
-      text-decoration: none;
-      font-size: 0.875rem;
-      font-weight: 500;
-      transition: all 0.2s;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .nav-item i {
-        width: 1.25rem;
-        height: 1.25rem;
-        color: var(--muted-foreground);
-    }
-
-    .nav-item:hover {
-      background: var(--secondary);
-      color: var(--foreground);
-    }
-
-    .nav-item.active {
-      background: var(--accent);
-      color: var(--accent-foreground);
-    }
-
-    .nav-item.active i {
-        color: var(--accent-foreground);
-    }
-
-    /* Upgrade Card */
-    .upgrade-container {
-        padding: 0 0.75rem 0.75rem 0.75rem;
-    }
-
-    .pro-card {
-      padding: 1rem;
-      background: var(--secondary);
-      border: 1px solid var(--border);
-      border-radius: 1rem;
-    }
-
-    .pro-card-header {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .pro-card-icon {
-        width: 2rem;
-        height: 2rem;
-        border-radius: 0.5rem;
-        background: rgba(232, 146, 58, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--accent);
-    }
-
-    .sidebar-profile-container {
-        padding: 1rem;
-        border-top: 1px solid var(--border);
-    }
-
-    .sidebar-profile {
-      padding: 0.75rem;
-      border-radius: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .sidebar-profile:hover {
-        background-color: var(--secondary);
-    }
-
-    .profile-avatar-wrapper {
-        position: relative;
-    }
-
-    .profile-avatar {
-      width: 2.5rem;
-      height: 2.5rem;
-      border-radius: 50%;
-      background: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      color: var(--primary-foreground);
-      box-shadow: 0 0 0 2px rgba(232, 146, 58, 0.3); /* ring-2 ring-accent/30 */
-    }
-
-    .profile-avatar-dot {
-        position: absolute;
-        bottom: -0.125rem;
-        right: -0.125rem;
-        width: 0.875rem;
-        height: 0.875rem;
-        border-radius: 50%;
-        background: var(--success);
-        border: 2px solid var(--card);
-    }
-
-    /* Text truncate utilities missing from custom styles */
-    .truncate {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .main-wrapper {
-      margin-left: var(--sidebar-width);
-      flex: 1;
-      min-height: 100vh;
-      position: relative;
-    }
-
-    .content-area {
-      padding: 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    /* Right Detail Panel */
-    .right-panel {
-      width: 420px;
-      height: 100vh;
-      position: fixed;
-      right: 0;
-      top: 0;
-      background: var(--sidebar);
-      border-left: 1px solid var(--sidebar-border);
-      transform: translateX(100%);
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-    }
-
-    .right-panel.open {
-      transform: translateX(0);
-    }
-
-    .panel-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.3);
-      backdrop-filter: blur(2px);
-      z-index: 95;
-      display: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .panel-overlay.active {
-      display: block;
-      opacity: 1;
-    }
-  </style>
+</head>
 </head>
 <body>
 
@@ -315,7 +71,7 @@
           <span class="text-sm font-semibold text-foreground">Upgrade to Pro</span>
         </div>
         <p class="text-xs text-muted-foreground mb-3" style="margin-top:0;">Unlock unlimited matches and AI emails</p>
-        <button type="button" class="w-full btn-primary h-10 text-sm py-2.5 rounded-xl font-semibold" style="padding: 0.625rem;">Upgrade Now</button>
+        <a href="/upgrade" class="w-full btn-primary h-10 text-sm py-2.5 rounded-xl font-semibold" style="padding: 0.625rem; display:block; text-align:center; box-sizing:border-box; text-decoration:none;">Upgrade Now</a>
       </div>
     </div>
 
@@ -351,6 +107,80 @@
   </aside>
   
   <div id="panel-overlay" class="panel-overlay"></div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:9000;display:flex;flex-direction:column;gap:0.6rem;max-width:22rem;pointer-events:none;"></div>
+
+<!-- Email Studio Modal -->
+<div id="email-modal" class="hidden" style="position:fixed;inset:0;background:rgba(15,15,25,0.5);backdrop-filter:blur(6px);z-index:600;display:flex;align-items:center;justify-content:center;padding:1rem;">
+  <div class="email-modal-shell animate-scale-in">
+
+    <!-- Header -->
+    <div class="email-modal-header">
+      <div style="display:flex;align-items:center;gap:0.875rem;">
+        <div style="width:2.75rem;height:2.75rem;background:var(--primary);border-radius:0.875rem;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;">
+          <i data-lucide="sparkles" style="width:1.25rem;height:1.25rem;"></i>
+        </div>
+        <div>
+          <h2 style="margin:0;font-size:1.05rem;font-weight:700;color:var(--foreground);font-family:'Fraunces',serif;">AI Email Studio</h2>
+          <p id="modal-prof-name" style="margin:0;font-size:0.8rem;color:var(--muted-foreground);">Loading professor...</p>
+        </div>
+      </div>
+      <button type="button" onclick="closeEmailStudio()" class="modal-close-btn">
+        <i data-lucide="x" style="width:1.1rem;height:1.1rem;"></i>
+      </button>
+    </div>
+
+    <!-- Generating State -->
+    <div id="email-generating" style="padding:3rem 2rem;text-align:center;">
+      <div style="width:4.5rem;height:4.5rem;background:rgba(232,146,58,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;animation:pulseGlow 2s ease-in-out infinite;">
+        <i data-lucide="sparkles" style="width:2rem;height:2rem;color:var(--accent);"></i>
+      </div>
+      <p style="color:var(--foreground);font-weight:600;font-size:1rem;margin:0 0 0.5rem;">Crafting your email with AI...</p>
+      <p style="color:var(--muted-foreground);font-size:0.875rem;margin:0 0 1.5rem;">Analyzing professor's research profile</p>
+      <div style="display:flex;justify-content:center;gap:0.5rem;">
+        <span class="ai-dot-1" style="width:0.5rem;height:0.5rem;background:var(--accent);border-radius:50%;display:inline-block;"></span>
+        <span class="ai-dot-2" style="width:0.5rem;height:0.5rem;background:var(--accent);border-radius:50%;display:inline-block;"></span>
+        <span class="ai-dot-3" style="width:0.5rem;height:0.5rem;background:var(--accent);border-radius:50%;display:inline-block;"></span>
+      </div>
+    </div>
+
+    <!-- Editor -->
+    <div id="email-editor" class="hidden" style="display:flex;flex-direction:column;gap:1rem;padding:0 1.5rem 1rem;flex:1;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span id="email-method-badge" style="padding:0.3rem 0.75rem;border-radius:62rem;font-size:0.78rem;font-weight:600;background:rgba(61,158,115,0.12);color:var(--success);border:1px solid rgba(61,158,115,0.2);">🤖 AI Generated</span>
+        <button type="button" onclick="regenerateEmail()" style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;color:var(--muted-foreground);background:none;border:1px solid var(--border);cursor:pointer;padding:0.35rem 0.75rem;border-radius:0.5rem;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted-foreground)'">
+          <i data-lucide="refresh-cw" style="width:0.85rem;height:0.85rem;"></i>
+          Regenerate
+        </button>
+      </div>
+      <div>
+        <label style="display:block;font-size:0.72rem;font-weight:700;color:var(--muted-foreground);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.07em;">Subject Line</label>
+        <input id="email-subject" type="text" style="width:100%;padding:0.75rem 1rem;border:1.5px solid var(--border);border-radius:0.75rem;font-size:0.875rem;background:#fff;color:var(--foreground);outline:none;box-sizing:border-box;transition:border-color 0.2s;font-family:inherit;" placeholder="Email subject..." onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <div style="flex:1;">
+        <label style="display:block;font-size:0.72rem;font-weight:700;color:var(--muted-foreground);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.07em;">Email Body</label>
+        <textarea id="email-body" rows="10" style="width:100%;padding:0.875rem 1rem;border:1.5px solid var(--border);border-radius:0.75rem;font-size:0.875rem;line-height:1.7;background:#fff;color:var(--foreground);outline:none;resize:vertical;box-sizing:border-box;font-family:inherit;transition:border-color 0.2s;" placeholder="Email body..." onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+      </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="email-modal-footer">
+      <button type="button" onclick="copyEmail()" class="btn-outline" style="flex:1;height:2.75rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;font-size:0.875rem;">
+        <i data-lucide="copy" style="width:0.95rem;height:0.95rem;"></i>
+        Copy
+      </button>
+      <button type="button" onclick="previewSend()" class="btn-outline" style="flex:1;height:2.75rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;font-size:0.875rem;">
+        <i data-lucide="eye" style="width:0.95rem;height:0.95rem;"></i>
+        Preview
+      </button>
+      <button type="button" id="send-btn" onclick="sendEmail()" class="btn-primary shimmer-btn" style="flex:2;height:2.75rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;font-size:0.875rem;">
+        <i data-lucide="send" style="width:0.95rem;height:0.95rem;"></i>
+        Send Email
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- Lucide Init -->

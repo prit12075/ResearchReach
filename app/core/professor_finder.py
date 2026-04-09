@@ -2,6 +2,7 @@
 professor_finder.py — Core orchestrator tying all modules together.
 """
 
+import re
 import logging
 from .database import db
 from .web_scraper import WebScraper
@@ -19,7 +20,7 @@ class ProfessorFinderSystem:
         self.email_system = email_system
         self.matcher = matcher
 
-    def run_search(self, student_profile: dict, max_results: int = 15) -> list:
+    def run_search(self, student_profile: dict, max_results: int = 40) -> list:
         """
         Full pipeline: scrape → match → save → return ranked professors.
 
@@ -30,20 +31,41 @@ class ProfessorFinderSystem:
         Returns:
             List of professor dicts enriched with match_score and matched_topics.
         """
-        research_area = " ".join(student_profile.get("research_interests", [])[:3])
+        interests = student_profile.get("research_interests", [])
         institution = student_profile.get("target_institution", "")
 
-        logger.info(f"Starting search: area='{research_area}', institution='{institution}'")
+        # Build search queries: one combined + one per top individual interest
+        combined_area = " ".join(interests[:4])
+        search_queries = [combined_area] if combined_area else []
+        for interest in interests[:3]:
+            if interest and interest not in search_queries:
+                search_queries.append(interest)
+        if not search_queries:
+            search_queries = ["computer science research"]
+
+        logger.info(f"Starting search: queries={search_queries}, institution='{institution}'")
 
         # Step 1: Save profile
         self.db.save_profile(student_profile)
 
-        # Step 2: Scrape professors
-        professors = self.scraper.find_professors(
-            research_area=research_area,
-            institution=institution,
-            max_results=max_results,
-        )
+        # Step 2: Scrape professors across all queries
+        all_professors = []
+        seen_names = set()
+        per_query_limit = max(max_results // len(search_queries), 15)
+
+        for query in search_queries:
+            results = self.scraper.find_professors(
+                research_area=query,
+                institution=institution,
+                max_results=per_query_limit,
+            )
+            for p in results:
+                key = re.sub(r"[^a-z]", "", p.get("name", "").lower())
+                if key and key not in seen_names:
+                    seen_names.add(key)
+                    all_professors.append(p)
+
+        professors = all_professors
         logger.info(f"Scraped {len(professors)} professors")
 
         if not professors:
@@ -60,7 +82,7 @@ class ProfessorFinderSystem:
             pid = db.upsert_professor(prof)
             prof["id"] = pid
 
-        self.db.log_scraping("combined", research_area, len(professors))
+        self.db.log_scraping("combined", combined_area, len(professors))
 
         logger.info(f"Search complete: {len(professors)} matched professors saved")
         return professors

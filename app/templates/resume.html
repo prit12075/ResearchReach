@@ -29,12 +29,11 @@
               <div class="upload-illustration">
                   <i data-lucide="file-text" id="idle-icon"></i>
               </div>
-              <p class="upload-title">Resume uploaded successfully</p>
-              <p class="upload-sub">Aryan_Patel_Resume.pdf</p>
+              <p class="upload-title">Drag & drop your resume</p>
+              <p class="upload-sub">PDF, DOC, or DOCX up to 10MB</p>
               <div class="upload-actions">
                 <button type="button" class="btn-outline" style="height: 2.6rem; font-size: 0.8rem;" onclick="document.getElementById('resume-upload').click()">
-                    <i data-lucide="upload" style="width:0.75rem; height:0.75rem;"></i>
-                    Upload New Resume
+                    Browse Files
                 </button>
               </div>
           </div>
@@ -44,6 +43,24 @@
                   <i data-lucide="sparkles" style="width:2rem; height:2rem;"></i>
               </div>
               <p class="upload-title">Processing your resume...</p>
+          </div>
+
+          <div id="upload-success" class="hidden">
+              <div class="upload-illustration" style="background: rgba(46,125,50,0.1); color: var(--success);">
+                  <i data-lucide="check-circle" style="width:2rem; height:2rem;"></i>
+              </div>
+              <p class="upload-title">Resume parsed successfully!</p>
+              <p class="upload-sub" id="uploaded-filename">your_resume.pdf</p>
+              <div class="upload-actions" style="gap: 0.75rem; flex-direction: column; align-items: center;">
+                <button type="button" class="btn-primary" style="height: 2.75rem; padding: 0 1.5rem; font-size: 0.9rem; gap: 0.5rem; display:inline-flex; align-items:center;" onclick="launchSearch()" id="find-btn">
+                    <i data-lucide="search" style="width:0.9rem; height:0.9rem;"></i>
+                    Find Professors Now
+                </button>
+                <button type="button" class="btn-outline" style="height: 2.4rem; font-size: 0.78rem;" onclick="document.getElementById('resume-upload').click()">
+                    <i data-lucide="upload" style="width:0.75rem; height:0.75rem;"></i>
+                    Replace Resume
+                </button>
+              </div>
           </div>
           
           <input type="file" id="resume-upload" accept=".pdf,.doc,.docx" style="display:none" onchange="handleFileSelect(this)" />
@@ -94,7 +111,7 @@
         </div>
       </div>
 
-      <div class="resume-stack" style="gap: 1rem;">
+      <div class="resume-stack" style="gap: 1rem;" id="experience-container">
           <article class="experience-card">
               <div class="experience-meta">
                   <div>
@@ -224,13 +241,38 @@
         if (data.name) form.name.value = data.name;
         if (data.email) form.email.value = data.email;
         if (data.bio) form.bio.value = data.bio;
+        if (data.university) form.university.value = data.university;
+        if (data.degree) form.degree.value = data.degree;
+        if (data.year) form.year.value = data.year;
+        if (data.projects && data.projects.length) {
+            form.projects.value = data.projects.join('\n');
+            const expContainer = document.getElementById('experience-container');
+            if (expContainer) {
+                expContainer.innerHTML = '';
+                data.projects.forEach(proj => {
+                    if(proj.trim().length > 0) {
+                        expContainer.innerHTML += `
+                        <article class="experience-card">
+                            <div class="experience-meta">
+                                <div><h3 class="experience-title" style="font-size: 1rem; margin: 0;">Extracted Experience</h3></div>
+                            </div>
+                            <p class="experience-body">${proj}</p>
+                        </article>`;
+                    }
+                });
+            }
+        }
         
         // Render tags
         if (data.research_interests) {
             const container = document.getElementById('tags-research');
             container.innerHTML = data.research_interests.map(t => `<span class="tag-pill">${t}</span>`).join('');
         }
-        
+        if (data.skills) {
+            const container = document.getElementById('tags-skills');
+            container.innerHTML = data.skills.map(t => `<span class="tag-pill">${t}</span>`).join('');
+            container.innerHTML += '<button class="tag-pill muted" type="button">+ Add Skill</button>';
+        }
     })
     .catch(err => {
         alert("Error parsing resume: " + err.message);

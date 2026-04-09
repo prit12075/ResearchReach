@@ -2,212 +2,362 @@
 {% block title %}ResearchReach — Professor Matches{% endblock %}
 
 {% block content %}
-<div class="space-y-8 relative">
+<div class="relative" style="max-width:80rem;margin:0 auto;padding-bottom:3rem;">
   <!-- Background blobs -->
   <div class="blob-amber"></div>
   <div class="blob-lavender"></div>
 
   <!-- Header -->
-  <header class="relative z-10 animate-fade-up">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <h1 class="page-title" style="margin-bottom: var(--space-1);">Professor Matches</h1>
-            <p class="page-subtitle" style="margin:0;">Found <span class="text-primary font-bold">{{ professors | length }}</span> researchers aligned with your profile.</p>
-        </div>
-        <div class="flex flex-wrap md:flex-nowrap items-center gap-4">
-            <button type="button" class="btn-outline" style="height: 2.6rem;" onclick="location.href='/profile'">
-                <i data-lucide="refresh-cw" style="width:1rem; height:1rem;"></i>
-                Refine Search
-            </button>
-            <button type="button" class="btn-primary" style="height: 2.6rem;" onclick="exportResults()">
-                <i data-lucide="download" style="width:1rem; height:1rem;"></i>
-                Export Results
-            </button>
-        </div>
+  <header class="relative z-10 animate-fade-up" style="margin-bottom:2.5rem;">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1.5rem;">
+      <div>
+        <h1 class="page-title" style="margin:0;">Professor <span style="color:var(--accent);">Matches</span></h1>
+        <p class="page-subtitle" style="margin-top:0.25rem;">Found <strong style="color:var(--primary);">{{ professors | length }}</strong> researchers tailor-made for your profile.</p>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:1rem;">
+        <button type="button" class="btn-outline glass" style="height:3rem;padding:0 1.25rem;display:inline-flex;align-items:center;gap:0.75rem;" onclick="location.href='/profile'">
+          <i data-lucide="settings-2" style="width:1.1rem;height:1.1rem;"></i>
+          Refine Search
+        </button>
+        <button type="button" class="btn-primary" style="height:3rem;padding:0 1.5rem;display:inline-flex;align-items:center;gap:0.75rem;box-shadow:0 10px 20px rgba(27,43,94,0.15);" onclick="doExport()">
+          <i data-lucide="file-down" style="width:1.1rem;height:1.1rem;"></i>
+          Export CSV
+        </button>
+      </div>
     </div>
   </header>
 
-  <!-- Filter Pills -->
-  <nav class="filter-tabs relative z-10 animate-fade-up" style="animation-delay: 80ms; margin-top: var(--space-3); gap: var(--space-3); flex-wrap: wrap;">
-      <button type="button" class="filter-pill active" style="padding: 0.6rem 1.15rem;">All Matches</button>
-      <button type="button" class="filter-pill" style="padding: 0.6rem 1.15rem;">Excellent (>80%)</button>
-      <button type="button" class="filter-pill" style="padding: 0.6rem 1.15rem;">New Matches</button>
-      <button type="button" class="filter-pill" style="padding: 0.6rem 1.15rem;">Contacted</button>
-  </nav>
+  <!-- Action Bar -->
+  <div class="glass animate-fade-up" style="animation-delay:80ms;padding:1.25rem 1.5rem;border-radius:1.25rem;margin-bottom:2.5rem;display:flex;flex-wrap:wrap;align-items:center;gap:1.5rem;position:relative;z-index:10;box-shadow:0 12px 30px rgba(0,0,0,0.03);">
+    <div class="filter-tabs" id="filter-tabs" style="background:rgba(226, 232, 240, 0.4);padding:0.3rem;border-radius:1rem;display:flex;gap:0.25rem;">
+      <button type="button" class="filter-pill active" style="padding:0.5rem 1.25rem;font-size:0.85rem;border:none;box-shadow:none;" data-filter="all"    onclick="setFilter(this,'all')">All Matches</button>
+      <button type="button" class="filter-pill"        style="padding:0.5rem 1.25rem;font-size:0.85rem;border:none;" data-filter="excellent" onclick="setFilter(this,'excellent')">Excellent</button>
+      <button type="button" class="filter-pill"        style="padding:0.5rem 1.25rem;font-size:0.85rem;border:none;" data-filter="new"    onclick="setFilter(this,'new')">New</button>
+      <button type="button" class="filter-pill"        style="padding:0.5rem 1.25rem;font-size:0.85rem;border:none;" data-filter="contacted" onclick="setFilter(this,'contacted')">Contacted</button>
+    </div>
+    <div style="margin-left:auto;position:relative;">
+      <i data-lucide="search" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);width:1rem;height:1rem;color:var(--muted-foreground);pointer-events:none;"></i>
+      <input type="text" id="prof-search" placeholder="Search name or university..."
+             oninput="applyFilters()"
+             style="padding:0.75rem 1rem 0.75rem 2.6rem;border:1.5px solid var(--border);border-radius:1rem;font-size:0.875rem;background:#fff;color:var(--foreground);outline:none;width:18rem;transition:all 0.2s;"
+             onfocus="this.style.borderColor='var(--primary)';this.style.boxShadow='0 0 0 4px rgba(27,43,94,0.05)'"
+             onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+    </div>
+    <span id="results-count" style="font-size:0.85rem;color:var(--muted-foreground);font-weight:600;white-space:nowrap;">{{ professors | length }} results founded</span>
+  </div>
 
   <!-- Results Grid -->
-  <section class="results-grid relative z-10" style="margin-top: var(--space-4);">
+  <section class="results-grid relative z-10" id="prof-grid">
     {% for prof in professors %}
-    <article class="match-card animate-fade-up cursor-pointer" 
-         style="animation-delay: {{ loop.index0 * 50 }}ms"
+    <article class="match-card animate-fade-up hover-lift glass"
+         id="prof-card-{{ prof.id }}"
+         style="background:white;padding:1.5rem;border-radius:1.75rem;border:1px solid rgba(226,232,240,0.6);box-shadow:0 10px 30px rgba(0,0,0,0.03);cursor:pointer;animation-delay: {{ loop.index0 * 45 }}ms"
          data-prof-id="{{ prof.id }}"
-         onclick="showProfessorDetail(this.dataset.profId)">
-      
-      <header class="match-header">
-        <div class="match-avatar">
-          <svg class="match-ring" viewBox="0 0 88 88" aria-hidden="true">
-            <circle cx="44" cy="44" r="40" fill="none" stroke="var(--secondary)" stroke-width="3"></circle>
-            <circle cx="44" cy="44" r="40" fill="none" stroke="var(--accent)" stroke-width="3.5"
-              class="match-ring-fill"
-              data-score="{{ prof.match_score or 0 }}"
-              stroke-linecap="round" transform="rotate(-90 44 44)"></circle>
-          </svg>
-          <div class="prof-avatar" style="width:3.75rem; height:3.75rem; font-size:1.1rem;">
+         data-status="{{ prof.status or 'new' }}"
+         data-score="{{ prof.match_score or 0 }}"
+         data-name="{{ (prof.name or '') | lower }}"
+         data-uni="{{ (prof.university or '') | lower }}"
+         onclick="showProfessorDetail('{{ prof.id }}')">
+
+      <header style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;">
+        <div style="display:flex;gap:1rem;align-items:center;">
+          <div class="prof-avatar" style="width:4rem;height:4rem;border-radius:1.25rem;background:linear-gradient(135deg, var(--secondary), #fff);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;box-shadow:inset 0 4px 10px rgba(0,0,0,0.02);">
             {% if prof.image_url %}
-              <img src="{{ prof.image_url }}" alt="{{ prof.name or 'Professor' }}'s headshot" class="prof-avatar-img">
+              <img src="{{ prof.image_url }}" alt="{{ prof.name or 'Professor' }}" style="width:100%;height:100%;object-fit:cover;">
             {% else %}
-              <span class="prof-avatar-initial">{{ prof.name[:1] if prof.name else '?' }}</span>
+              <span style="font-size:1.5rem;font-weight:700;color:var(--primary);">{{ prof.name[:1] if prof.name else '?' }}</span>
             {% endif %}
+            
+            <!-- Match Score Doughnut (Mini) -->
+            <div style="position:absolute;bottom:-2px;right:-2px;width:1.75rem;height:1.75rem;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,0.1);border:1px solid var(--border);">
+               <span style="font-size:0.65rem;font-weight:800;color:var(--accent);">{{ prof.match_score | int }}%</span>
+            </div>
+          </div>
+          <div style="min-width:0;">
+            <h3 style="margin:0;font-size:1.15rem;font-weight:700;line-height:1.2;color:var(--foreground);">{{ prof.name }}</h3>
+            <p style="margin:0.25rem 0 0;font-size:0.85rem;color:var(--muted-foreground);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ prof.university }}</p>
           </div>
         </div>
-        <div style="flex:1;">
-          <h2 class="match-name" style="font-size: 1.05rem;">{{ prof.name }}</h2>
-          <p class="match-meta">{{ prof.title or 'Faculty Member' }} · {{ prof.university }}</p>
+        <div class="match-score-badge" style="background:rgba(27,43,94,0.05);color:var(--primary);border:1px solid rgba(27,43,94,0.1);padding:0.4rem 0.8rem;border-radius:0.75rem;font-size:0.75rem;font-weight:700;">
+          {{ prof.match_grade or 'A+' }}
         </div>
-        <span class="match-score-badge">{{ prof.match_score | int }}%</span>
       </header>
 
-      <div class="match-tags">
+      <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;">
         {% for area in prof.research_areas[:3] %}
-        <span class="tag-pill" style="font-size:0.78rem; padding: 0.35rem 0.75rem;">{{ area }}</span>
+        <span style="font-size:0.75rem;font-weight:600;padding:0.4rem 0.8rem;background:var(--secondary);color:var(--primary);border-radius:0.75rem;border:1px solid rgba(27,43,94,0.05);">{{ area }}</span>
         {% endfor %}
       </div>
 
-      <footer class="match-footer">
-        <div style="display:flex; align-items:center; gap:0.35rem;">
-            <i data-lucide="book-open" style="width:0.95rem; height:0.95rem;"></i>
-            <span>{{ prof.publication_count or 0 }} Pubs</span>
+      <footer style="display:flex;align-items:center;justify-content:space-between;padding-top:1.25rem;border-top:1px solid rgba(226,232,240,0.4);">
+        <div style="display:flex;align-items:center;gap:0.6rem;color:var(--muted-foreground);">
+          <div style="width:1.75rem;height:1.75rem;border-radius:0.5rem;background:var(--secondary);display:flex;align-items:center;justify-content:center;">
+             <i data-lucide="graduation-cap" style="width:0.9rem;height:0.9rem;color:var(--primary);"></i>
+          </div>
+          <span style="font-size:0.8rem;font-weight:600;">{{ prof.publication_count or '12+' }} Publications</span>
         </div>
-        <div style="display:flex; align-items:center; gap:0.3rem; color: var(--primary);">
-            <span>Details</span>
-            <i data-lucide="chevron-right" style="width:0.9rem; height:0.9rem;"></i>
+        <div style="display:flex;align-items:center;gap:0.4rem;color:var(--accent);font-weight:700;font-size:0.875rem;">
+          <span>View Profile</span>
+          <i data-lucide="arrow-right" style="width:1rem;height:1rem;"></i>
         </div>
       </footer>
     </article>
     {% endfor %}
   </section>
 
+  <!-- Empty state -->
   {% if not professors %}
-  <div class="text-center py-20 animate-fade-up">
-    <div class="w-20 h-20 rounded-3xl bg-secondary flex items-center justify-center mx-auto mb-6 text-muted-foreground">
-        <i data-lucide="search-x" style="width:2.5rem; height:2.5rem;"></i>
+  <div class="text-center py-20 animate-fade-up" style="animation-delay:100ms;">
+    <div class="empty-icon">
+      <i data-lucide="search-x" style="width:2.5rem;height:2.5rem;"></i>
     </div>
     <h2 class="font-serif text-2xl font-semibold text-foreground">No matches found</h2>
     <p class="text-muted-foreground mt-2 max-w-sm mx-auto">Try refining your research interests or uploading a more detailed resume.</p>
-    <a href="/profile" class="btn-primary mt-8 inline-flex items-center gap-2 no-underline">
-        <i data-lucide="edit" style="width:1rem; height:1rem;"></i>
-        Adjust Profile
+    <a href="/profile" class="btn-primary mt-8 inline-flex items-center gap-2 no-underline" style="margin-top:2rem;">
+      <i data-lucide="edit" style="width:1rem;height:1rem;"></i>
+      Adjust Profile
     </a>
   </div>
   {% endif %}
+
+  <!-- No-results-after-filter message -->
+  <div id="no-filter-results" class="text-center py-20 hidden" style="animation-delay:100ms;">
+    <div class="empty-icon">
+      <i data-lucide="filter-x" style="width:2rem;height:2rem;"></i>
+    </div>
+    <p class="text-muted-foreground">No professors match this filter. Try a different one.</p>
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
   const ALL_PROFESSORS = {{ professors | tojson | safe }};
-  
+
+  // ── Match ring initialization ─────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    initMatchRings();
+    lucide.createIcons();
+  });
+
+  function initMatchRings() {
+    document.querySelectorAll('.match-ring-fill').forEach(circle => {
+      const score = parseFloat(circle.dataset.score) || 0;
+      const r = 40;
+      const circumference = 2 * Math.PI * r; // ≈ 251.2
+      const offset = circumference - (score / 100) * circumference;
+      circle.style.strokeDasharray = circumference;
+      circle.style.strokeDashoffset = circumference; // start empty
+      // Colour by score
+      if (score >= 80) circle.style.stroke = 'var(--success)';
+      else if (score >= 60) circle.style.stroke = 'var(--accent)';
+      else circle.style.stroke = 'var(--primary)';
+      // Animate in
+      requestAnimationFrame(() => {
+        circle.style.transition = 'stroke-dashoffset 1.3s cubic-bezier(0.22,1,0.36,1)';
+        circle.style.strokeDashoffset = offset;
+      });
+    });
+  }
+
+  // ── Filtering ─────────────────────────────────────────────────
+  let activeFilter = 'all';
+
+  function setFilter(btn, filter) {
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = filter;
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const search = (document.getElementById('prof-search')?.value || '').toLowerCase().trim();
+    const cards = document.querySelectorAll('.match-card');
+    let visible = 0;
+
+    cards.forEach(card => {
+      const score  = parseFloat(card.dataset.score) || 0;
+      const status = card.dataset.status || '';
+      const name   = card.dataset.name  || '';
+      const uni    = card.dataset.uni   || '';
+
+      let show = true;
+      if (activeFilter === 'excellent') show = score >= 80;
+      else if (activeFilter === 'new')  show = status === 'new';
+      else if (activeFilter === 'contacted') show = status === 'contacted';
+
+      if (show && search) {
+        show = name.includes(search) || uni.includes(search);
+      }
+
+      card.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    const countEl = document.getElementById('results-count');
+    if (countEl) countEl.textContent = `${visible} result${visible !== 1 ? 's' : ''}`;
+
+    const noFilter = document.getElementById('no-filter-results');
+    if (noFilter) noFilter.classList.toggle('hidden', visible > 0 || ALL_PROFESSORS.length === 0);
+  }
+
+  // ── Professor detail panel ────────────────────────────────────
   function showProfessorDetail(id) {
-    const prof = ALL_PROFESSORS.find(p => p.id === id);
-    if (!prof) return;
+    const prof = ALL_PROFESSORS.find(p => String(p.id) === String(id));
+    if (!prof) { showToast('error', 'Could not load professor details.'); return; }
+
     const initials = (prof.name || '')
-      .split(' ')
-      .filter(Boolean)
-      .map(part => part[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase() || '?';
-    
-    const content = `
-      <div class="p-8 space-y-8">
-        <header class="flex items-center justify-between">
-            <button type="button" onclick="closePanel()" class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center transition-colors">
-                <i data-lucide="x"></i>
-            </button>
-            <div class="flex gap-2">
-                <button type="button" class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center transition-colors">
-                    <i data-lucide="share-2"></i>
-                </button>
-                <button type="button" class="w-10 h-10 rounded-xl hover:bg-secondary flex items-center justify-center transition-colors">
-                    <i data-lucide="star"></i>
-                </button>
-            </div>
-        </header>
+      .split(' ').filter(Boolean)
+      .map(p => p[0]).join('').slice(0,2).toUpperCase() || '?';
 
-        <div class="text-center">
-            <div class="prof-avatar prof-avatar-lg" style="background: var(--primary); color: #fff; margin: 0 auto 1rem;">
-                ${initials}
-            </div>
-            <h2 class="font-serif text-2xl font-semibold text-foreground">${prof.name}</h2>
-            <p class="text-accent font-medium mt-1">${prof.title || 'Faculty Member'}</p>
-            <div class="flex items-center justify-center gap-1.5 text-muted-foreground mt-1 text-sm">
-                <i data-lucide="map-pin" style="width:0.9rem; height:0.9rem;"></i>
-                <span>${prof.university}</span>
-            </div>
+    const score = prof.match_score || 0;
+    const scoreColor = score >= 80 ? 'var(--success)' : score >= 60 ? 'var(--accent)' : 'var(--primary)';
+    const researchHTML = (prof.research_areas || [])
+      .map(a => `<span style="padding:0.3rem 0.75rem;border-radius:62rem;background:var(--secondary);font-size:0.78rem;font-weight:600;display:inline-block;margin:0.2rem;">${escHtml(String(a))}</span>`)
+      .join('');
+    const scholarLink = (prof.scholar_url && prof.scholar_url !== 'null') ? prof.scholar_url : null;
+    const websiteLink = (prof.website && prof.website !== 'null') ? prof.website : null;
+    const linkedinLink = (prof.linkedin_url && prof.linkedin_url !== 'null') ? prof.linkedin_url : null;
+    const email = (prof.email && prof.email !== 'null') ? prof.email : null;
+    const phone = (prof.phone && prof.phone !== 'null') ? prof.phone : null;
+
+    // Build contact rows
+    const contactRows = [
+      email   ? `<a href="mailto:${escHtml(email)}" style="display:flex;align-items:center;gap:0.75rem;padding:0.7rem 0.875rem;border-radius:0.75rem;background:var(--secondary);text-decoration:none;color:var(--foreground);transition:background 0.2s;font-size:0.84rem;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--secondary)'">
+          <i data-lucide="mail" style="width:1rem;height:1rem;color:var(--accent);flex-shrink:0;"></i>
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(email)}</span>
+        </a>` : '',
+      phone   ? `<a href="tel:${escHtml(phone)}" style="display:flex;align-items:center;gap:0.75rem;padding:0.7rem 0.875rem;border-radius:0.75rem;background:var(--secondary);text-decoration:none;color:var(--foreground);transition:background 0.2s;font-size:0.84rem;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--secondary)'">
+          <i data-lucide="phone" style="width:1rem;height:1rem;color:var(--success);flex-shrink:0;"></i>
+          <span>${escHtml(phone)}</span>
+        </a>` : '',
+      websiteLink ? `<a href="${escHtml(websiteLink)}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:0.75rem;padding:0.7rem 0.875rem;border-radius:0.75rem;background:var(--secondary);text-decoration:none;color:var(--foreground);transition:background 0.2s;font-size:0.84rem;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--secondary)'">
+          <i data-lucide="globe" style="width:1rem;height:1rem;color:var(--primary);flex-shrink:0;"></i>
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Faculty Website</span>
+          <i data-lucide="external-link" style="width:0.75rem;height:0.75rem;margin-left:auto;opacity:0.5;flex-shrink:0;"></i>
+        </a>` : '',
+      linkedinLink ? `<a href="${escHtml(linkedinLink)}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:0.75rem;padding:0.7rem 0.875rem;border-radius:0.75rem;background:var(--secondary);text-decoration:none;color:var(--foreground);transition:background 0.2s;font-size:0.84rem;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--secondary)'">
+          <i data-lucide="linkedin" style="width:1rem;height:1rem;color:#0a66c2;flex-shrink:0;"></i>
+          <span>LinkedIn Profile</span>
+          <i data-lucide="external-link" style="width:0.75rem;height:0.75rem;margin-left:auto;opacity:0.5;flex-shrink:0;"></i>
+        </a>` : '',
+      scholarLink ? `<a href="${escHtml(scholarLink)}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:0.75rem;padding:0.7rem 0.875rem;border-radius:0.75rem;background:var(--secondary);text-decoration:none;color:var(--foreground);transition:background 0.2s;font-size:0.84rem;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--secondary)'">
+          <i data-lucide="book-open" style="width:1rem;height:1rem;color:var(--muted-foreground);flex-shrink:0;"></i>
+          <span>Google Scholar / Profile</span>
+          <i data-lucide="external-link" style="width:0.75rem;height:0.75rem;margin-left:auto;opacity:0.5;flex-shrink:0;"></i>
+        </a>` : '',
+    ].filter(Boolean).join('');
+
+    const hasContact = contactRows.length > 0;
+
+    openPanel(`
+      <div style="padding:1.5rem 1.5rem 2rem;display:flex;flex-direction:column;gap:1.5rem;min-height:100%;">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <button type="button" onclick="closePanel()"
+            style="width:2.5rem;height:2.5rem;border-radius:0.75rem;border:1px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted-foreground);transition:all 0.2s;"
+            onmouseover="this.style.background='var(--secondary)'" onmouseout="this.style.background='transparent'">
+            <i data-lucide="x" style="width:1.1rem;height:1.1rem;"></i>
+          </button>
+          <span style="font-size:0.78rem;color:var(--muted-foreground);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Profile</span>
+          <div style="width:2.5rem;"></div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-            <div class="bg-secondary/50 rounded-2xl p-4 text-center">
-                <p class="text-xs text-muted-foreground font-medium uppercase tracking-wider">Match Score</p>
-                <p class="text-2xl font-serif font-bold text-accent">${prof.match_score}%</p>
-            </div>
-            <div class="bg-secondary/50 rounded-2xl p-4 text-center">
-                <p class="text-xs text-muted-foreground font-medium uppercase tracking-wider">Publications</p>
-                <p class="text-2xl font-serif font-bold text-primary">${prof.publication_count || 0}</p>
-            </div>
+        <div style="text-align:center;padding:0.5rem 0;">
+          <div class="prof-avatar" style="width:4.5rem;height:4.5rem;font-size:1.6rem;font-weight:700;background:var(--primary);color:#fff;margin:0 auto 1rem;">${initials}</div>
+          <h2 style="margin:0;font-family:'Fraunces',serif;font-size:1.35rem;font-weight:600;color:var(--foreground);">${escHtml(prof.name || '')}</h2>
+          <p style="margin:0.25rem 0 0;color:var(--accent);font-weight:600;font-size:0.9rem;">${escHtml(prof.title || 'Faculty Member')}</p>
+          <div style="display:flex;align-items:center;justify-content:center;gap:0.4rem;color:var(--muted-foreground);margin-top:0.35rem;font-size:0.875rem;">
+            <i data-lucide="map-pin" style="width:0.9rem;height:0.9rem;"></i>
+            <span>${escHtml(prof.university || '')}</span>
+          </div>
+          ${prof.department ? `<p style="margin:0.2rem 0 0;font-size:0.8rem;color:var(--muted-foreground);">${escHtml(prof.department)}</p>` : ''}
         </div>
 
-        <div class="space-y-4">
-            <div>
-                <h4 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <i data-lucide="tag" class="text-accent" style="width:1rem; height:1rem;"></i>
-                    Research Pillars
-                </h4>
-                <div class="flex flex-wrap gap-2">
-                    ${(prof.research_areas || []).map(a => `<span class="px-3 py-1.5 rounded-full bg-secondary text-xs font-medium">${a}</span>`).join('')}
-                </div>
-            </div>
-
-            <div>
-                <h4 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <i data-lucide="book" class="text-primary" style="width:1rem; height:1rem;"></i>
-                    Recent Publication
-                </h4>
-                <div class="bg-card border border-border rounded-2xl p-4 shadow-sm">
-                    <p class="text-sm text-foreground italic leading-relaxed">
-                        "${prof.recent_papers || 'No recent papers found in database.'}"
-                    </p>
-                </div>
-            </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div style="background:var(--secondary);border-radius:1rem;padding:1rem;text-align:center;">
+            <p style="margin:0;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted-foreground);font-weight:700;">Match Score</p>
+            <p style="margin:0.25rem 0 0;font-size:1.8rem;font-family:'Fraunces',serif;font-weight:700;color:${scoreColor};">${score}%</p>
+          </div>
+          <div style="background:var(--secondary);border-radius:1rem;padding:1rem;text-align:center;">
+            <p style="margin:0;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted-foreground);font-weight:700;">Publications</p>
+            <p style="margin:0.25rem 0 0;font-size:1.8rem;font-family:'Fraunces',serif;font-weight:700;color:var(--primary);">${prof.publication_count || 0}</p>
+          </div>
         </div>
 
-        <div class="pt-8 space-y-3">
-            <button type="button" class="w-full btn-primary h-12 flex items-center justify-center gap-2 group" onclick="startOutreach(${prof.id})">
-                <i data-lucide="sparkles" style="width:1.2rem; height:1.2rem;"></i>
-                Generate AI Outreach
-                <i data-lucide="arrow-right" class="group-hover:translate-x-1 transition-transform" style="width:1.2rem; height:1.2rem;"></i>
-            </button>
-            <button type="button" class="w-full btn-outline h-12 flex items-center justify-center gap-2" onclick="window.open('${prof.scholar_url || '#'}', '_blank')">
-                <i data-lucide="external-link" style="width:1rem; height:1rem;"></i>
-                View Academic Profile
-            </button>
+        ${hasContact ? `
+        <div>
+          <h4 style="margin:0 0 0.75rem;font-size:0.8rem;font-weight:700;color:var(--foreground);display:flex;align-items:center;gap:0.5rem;">
+            <i data-lucide="contact" style="width:0.95rem;height:0.95rem;color:var(--accent);"></i> Contact Info
+          </h4>
+          <div style="display:flex;flex-direction:column;gap:0.4rem;">${contactRows}</div>
+        </div>` : `
+        <div style="background:var(--secondary);border-radius:0.875rem;padding:0.875rem;text-align:center;">
+          <i data-lucide="info" style="width:1rem;height:1rem;color:var(--muted-foreground);"></i>
+          <p style="margin:0.4rem 0 0;font-size:0.82rem;color:var(--muted-foreground);">No public contact info found.<br>Use the email generator below to reach out.</p>
+        </div>`}
+
+        <div>
+          <h4 style="margin:0 0 0.75rem;font-size:0.8rem;font-weight:700;color:var(--foreground);display:flex;align-items:center;gap:0.5rem;">
+            <i data-lucide="tag" style="width:0.95rem;height:0.95rem;color:var(--accent);"></i> Research Areas
+          </h4>
+          <div style="display:flex;flex-wrap:wrap;gap:0.35rem;">${researchHTML}</div>
+        </div>
+
+        ${prof.recent_papers ? `
+        <div>
+          <h4 style="margin:0 0 0.75rem;font-size:0.8rem;font-weight:700;color:var(--foreground);display:flex;align-items:center;gap:0.5rem;">
+            <i data-lucide="book-open" style="width:0.95rem;height:0.95rem;color:var(--primary);"></i> Recent Work
+          </h4>
+          <div style="background:var(--secondary);border-radius:0.875rem;padding:0.875rem;font-size:0.83rem;color:var(--foreground);line-height:1.65;font-style:italic;">
+            "${escHtml(String(prof.recent_papers || '').slice(0,280))}${prof.recent_papers && prof.recent_papers.length > 280 ? '…' : ''}"
+          </div>
+        </div>` : ''}
+
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:0.75rem;padding-top:0.5rem;">
+          <button type="button" class="btn-primary shimmer-btn"
+            style="height:3rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;font-size:0.9rem;"
+            onclick="closePanel();openEmailStudio(${prof.id}, '${escHtml(prof.name || '')}')">
+            <i data-lucide="sparkles" style="width:1.1rem;height:1.1rem;"></i>
+            Generate AI Outreach Email
+          </button>
         </div>
       </div>
-    `;
-    
-    openPanel(content);
+    `);
   }
 
-  function startOutreach(id) {
-    // This will eventually open the Email Studio modal or move to outreach screen
-    // For now, let's just log it
-    console.log("Starting outreach for professor", id);
-    // You can implement the existing Email Studio logic here or redirect
-    alert("Email Studio under construction in new UI. Coming soon!");
+  // ── Export CSV ────────────────────────────────────────────────
+  function doExport() {
+    if (!ALL_PROFESSORS.length) {
+      showToast('warning', 'No professors to export yet.');
+      return;
+    }
+    const headers = ['Name','Title','University','Department','Email','Phone','Website','LinkedIn','Scholar URL','Match Score','Match Grade','Research Areas'];
+    const rows = ALL_PROFESSORS.map(p => [
+      p.name, p.title, p.university, p.department,
+      p.email, p.phone, p.website, p.linkedin_url, p.scholar_url,
+      p.match_score, p.match_grade,
+      (p.research_areas || []).join('; '),
+    ]);
+    const csv = [headers, ...rows]
+      .map(row => row.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type:'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = `researchreach_professors_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('success', `Exported ${ALL_PROFESSORS.length} professors to CSV.`);
   }
 
-  function exportResults() {
-    alert("Exporting " + ALL_PROFESSORS.length + " results to CSV...");
+  // Helper — escape HTML in JS template literals
+  function escHtml(s) {
+    return String(s ?? '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
   }
 </script>
 {% endblock %}
